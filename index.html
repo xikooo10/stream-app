@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Stream App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    #channels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px;
+      background: #111;
+      justify-content: center;
+    }
+
+    button {
+      padding: 6px 10px;
+      background: #222;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    iframe {
+      width: 100%;
+      height: calc(100vh - 70px);
+      border: none;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  // ===== CHANGE THIS PASSWORD =====
+  const password = "imin";
+  let accessGranted = false;
+
+  while (!accessGranted) {
+    let input = prompt("Enter password to watch channels:");
+    if (input === null || input === "" || input !== password) {
+      alert("Wrong password! Access denied.");
+    } else {
+      accessGranted = true;
+    }
+  }
+</script>
+
+<div id="channels">
+  <button onclick="play('https://dlhd.link/stream/stream-49.php')">SPORT TV1</button>
+  <button onclick="play('https://dlhd.link/stream/stream-74.php')">SPORT TV2</button>
+  <button onclick="play('https://dlhd.link/stream/stream-454.php')">SPORT TV3</button>
+  <button onclick="play('https://dlhd.link/stream/stream-289.php')">SPORT TV4</button>
+  <button onclick="play('https://dlhd.link/stream/stream-290.php')">SPORT TV5</button>
+  <button onclick="play('https://dlhd.link/stream/stream-291.php')">SPORT TV6</button>
+
+  <button onclick="play('https://dlhd.link/stream/stream-455.php')">DAZN 1</button>
+  <button onclick="play('https://dlhd.link/stream/stream-456.php')">DAZN 2</button>
+  <button onclick="play('https://dlhd.link/stream/stream-457.php')">DAZN 3</button>
+  <button onclick="play('https://dlhd.link/stream/stream-458.php')">DAZN 4</button>
+  <button onclick="play('https://dlhd.link/stream/stream-459.php')">DAZN 5</button>
+
+  <button onclick="play('https://dlhd.link/stream/stream-380.php')">BTV</button>
+</div>
+
+<iframe
+  id="player"
+  src="https://dlhd.link/stream/stream-49.php"
+  allowfullscreen>
+</iframe>
+
+<script>
+  function play(url) {
+    document.getElementById("player").src = url;
+  }
+</script>
+
+</body>
+</html>
+
+
+
+</body>
+</html>
