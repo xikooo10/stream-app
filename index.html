@@ -61,10 +61,14 @@
 
 <div id="channels"></div>
 
+<!-- Keep iframe simple -->
 <iframe id="player" allowfullscreen></iframe>
 
 <script>
-  // Channel list using channel_id (from docs)
+  // ===== TV DETECTION =====
+  const isTV = /TV|SmartTV|GoogleTV|Android TV|Tizen|Web0S/i.test(navigator.userAgent);
+
+  // Channel list
   const channels = [
     { name: "SPORT TV1", id: 49 },
     { name: "SPORT TV2", id: 74 },
@@ -80,30 +84,23 @@
     { name: "BTV", id: 380 }
   ];
 
-  // Player folders from API docs (fallback order)
-  const folders = ["stream", "watch", "player", "cast"];
-
   const channelsDiv = document.getElementById("channels");
   const player = document.getElementById("player");
 
-  function getStreamUrl(id, folder) {
-    return `https://dlhd.link/${folder}/stream-${id}.php`;
-  }
-
+  // ===== PLAY FUNCTION (HYBRID) =====
   function playChannel(id) {
-    let index = 0;
+    const url = `https://dlhd.link/stream/stream-${id}.php`;
 
-    function tryNext() {
-      if (index >= folders.length) return;
-      player.src = getStreamUrl(id, folders[index]);
-      index++;
+    if (isTV) {
+      // TV → open player directly (most reliable)
+      window.location.href = url;
+    } else {
+      // PC / Mobile → iframe embed
+      player.src = url;
     }
-
-    player.onerror = tryNext;
-    tryNext();
   }
 
-  // Build buttons automatically
+  // Build buttons
   channels.forEach(ch => {
     const btn = document.createElement("button");
     btn.textContent = ch.name;
@@ -111,12 +108,16 @@
     channelsDiv.appendChild(btn);
   });
 
-  // Load first channel by default
-  playChannel(channels[0].id);
+  // Load first channel by default (PC / Mobile only)
+  if (!isTV) {
+    playChannel(channels[0].id);
+  }
 </script>
 
 </body>
 </html>
+
+
 
 
 
