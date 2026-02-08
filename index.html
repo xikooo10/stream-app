@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Sports Stream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
   
@@ -16,6 +18,7 @@
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* Login Screen */
@@ -49,6 +52,997 @@
     .login-box h1 {
       margin: 0 0 8px 0;
       font-size: 28px;
+      font-weight: 600;
+    }
+
+    .login-box .subtitle {
+      color: #888;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #2a2a2a;
+      border: 2px solid #333;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .login-box input:focus {
+      outline: none;
+      border-color: #e50914;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: #e50914;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .login-box button:hover {
+      background: #f40612;
+    }
+
+    .login-box button:active {
+      transform: scale(0.98);
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      margin-top: 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    /* Main App */
+    #app {
+      display: none;
+    }
+
+    #app.visible {
+      display: block;
+    }
+
+    #header {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #current-channel {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e50914;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    #search-box {
+      padding: 8px 12px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      width: 200px;
+      transition: all 0.2s;
+    }
+
+    #search-box:focus {
+      outline: none;
+      border-color: #e50914;
+    }
+
+    .control-button {
+      padding: 8px 16px;
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .control-button:active {
+      transform: scale(0.95);
+      background: #3a3a3a;
+    }
+
+    /* iOS specific styles */
+    @supports (-webkit-touch-callout: none) {
+      .control-button {
+        padding: 10px 16px;
+        font-size: 15px;
+      }
+    }
+
+    #channels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #444 #1a1a1a;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #channels::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #channels::-webkit-scrollbar-track {
+      background: #1a1a1a;
+      border-radius: 4px;
+    }
+
+    #channels::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    button.channel-btn {
+      padding: 10px 16px;
+      background: #2a2a2a;
+      color: #fff;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      white-space: nowrap;
+      position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button.channel-btn:active {
+      transform: scale(0.95);
+      background: #3a3a3a;
+    }
+
+    button.channel-btn.active {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    button.channel-btn.active::before {
+      content: "▶";
+      position: absolute;
+      left: 8px;
+      font-size: 10px;
+    }
+
+    button.channel-btn.hidden {
+      display: none;
+    }
+
+    #player-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 150px);
+      background: #000;
+    }
+
+    /* iOS fullscreen mode */
+    body.ios-fullscreen #header {
+      display: none;
+    }
+
+    body.ios-fullscreen #player-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+    }
+
+    body.ios-fullscreen #exit-fullscreen-btn {
+      display: block;
+    }
+
+    #exit-fullscreen-btn {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 18px;
+      color: #888;
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #e50914;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #error-msg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: #ff6b6b;
+      display: none;
+      max-width: 400px;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    #controls-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      gap: 12px;
+      z-index: 20;
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px 12px;
+      transition: transform 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .control-btn:active {
+      transform: scale(1.2);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2a2a2a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .favorites-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+
+    .favorites-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .favorite-star {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 5;
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .shortcut-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.8);
+      color: #888;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+
+    .shortcut-hint.show {
+      opacity: 1;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .login-box {
+        padding: 30px 20px;
+      }
+
+      #header {
+        padding: 10px;
+      }
+
+      .header-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .header-controls {
+        justify-content: center;
+      }
+
+      #search-box {
+        width: 100%;
+      }
+
+      #current-channel {
+        font-size: 16px;
+        text-align: center;
+        min-width: auto;
+      }
+
+      button.channel-btn {
+        padding: 12px 14px;
+        font-size: 14px;
+        flex: 1 1 calc(50% - 4px);
+        min-width: 130px;
+      }
+
+      #channels {
+        max-height: 180px;
+      }
+      
+      #player-container {
+        height: calc(100vh - 220px);
+      }
+
+      .shortcut-hint {
+        display: none;
+      }
+
+      .control-button {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      #controls-overlay {
+        bottom: 10px;
+        padding: 10px 16px;
+      }
+
+      .control-btn {
+        font-size: 20px;
+        padding: 6px 10px;
+      }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+      #player-container {
+        height: calc(100vh - 100px);
+      }
+
+      #header {
+        padding: 6px 10px;
+      }
+
+      button.channel-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+      }
+
+      #channels {
+        max-height: 100px;
+      }
+
+      .header-top {
+        margin-bottom: 6px;
+      }
+    }
+
+    /* iOS safe area */
+    @supports (padding: max(0px)) {
+      body {
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      
+      #player-container {
+        height: calc(100vh - 150px - env(safe-area-inset-bottom));
+      }
+      
+      #controls-overlay {
+        bottom: calc(20px + env(safe-area-inset-bottom));
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>⚽ Sports Stream</h1>
+    <p class="subtitle">Your personal sports streaming hub</p>
+    <form id="login-form">
+      <input 
+        type="password" 
+        id="password-input" 
+        placeholder="Enter password" 
+        autocomplete="current-password"
+        required
+      >
+      <button type="submit">🔓 Access Streams</button>
+    </form>
+    <div class="error-message" id="error-message">
+      ❌ Incorrect password. Please try again.
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <div id="header">
+    <div class="header-top">
+      <div id="current-channel">Select a channel</div>
+      <div class="header-controls">
+        <input type="text" id="search-box" placeholder="🔍 Search channels...">
+        <button class="control-button" id="refresh-btn" title="Refresh stream">🔄 Refresh</button>
+        <button class="control-button" id="fullscreen-btn" title="Fullscreen">⛶ Full</button>
+        <button class="control-button" id="logout-btn" title="Logout">🚪 Logout</button>
+      </div>
+    </div>
+
+    <div id="favorites" class="favorites-section" style="display: none;">
+      <div class="favorites-label">⭐ Favorites</div>
+      <div id="favorites-list"></div>
+    </div>
+
+    <div id="channels"></div>
+  </div>
+
+  <div id="player-container">
+    <button id="exit-fullscreen-btn">✕ Exit Fullscreen</button>
+    
+    <div id="loading">
+      <div class="spinner"></div>
+      <div>Loading stream...</div>
+      <small style="color: #666; margin-top: 8px;">This may take a few seconds</small>
+    </div>
+    <div id="error-msg">
+      <p style="font-size: 48px; margin: 0;">⚠️</p>
+      <p style="margin: 12px 0;">Stream unavailable</p>
+      <small>Try another channel or refresh</small>
+    </div>
+    <iframe id="player" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+    
+    <div id="controls-overlay">
+      <button class="control-btn" id="prev-btn" title="Previous">⏮</button>
+      <button class="control-btn" id="play-pause-btn" title="Play/Pause">⏸</button>
+      <button class="control-btn" id="next-btn" title="Next">⏭</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="shortcut-hint" class="shortcut-hint">
+  Press F for fullscreen • ← → to switch channels
+</div>
+
+<script>
+  // ========== CONFIGURATION ==========
+  const CONFIG = {
+    PASSWORD: "imin",
+    SESSION_KEY: "stream_auth",
+    SESSION_DURATION: 24 * 60 * 60 * 1000,
+    FAVORITES_KEY: "stream_favorites",
+    LAST_CHANNEL_KEY: "lastChannel"
+  };
+
+  const channels = [
+    { name: "SPORT TV1", id: 49, category: "sport" },
+    { name: "SPORT TV2", id: 74, category: "sport" },
+    { name: "SPORT TV3", id: 454, category: "sport" },
+    { name: "SPORT TV4", id: 289, category: "sport" },
+    { name: "SPORT TV5", id: 290, category: "sport" },
+    { name: "SPORT TV6", id: 291, category: "sport" },
+    { name: "DAZN 1", id: 455, category: "dazn" },
+    { name: "DAZN 2", id: 456, category: "dazn" },
+    { name: "DAZN 3", id: 457, category: "dazn" },
+    { name: "DAZN 4", id: 458, category: "dazn" },
+    { name: "DAZN 5", id: 459, category: "dazn" },
+    { name: "BTV", id: 380, category: "other" }
+  ];
+
+  const folders = ["stream", "watch", "player", "cast"];
+
+  // ========== DETECT iOS ==========
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  // ========== DOM ELEMENTS ==========
+  const loginScreen = document.getElementById("login-screen");
+  const app = document.getElementById("app");
+  const loginForm = document.getElementById("login-form");
+  const passwordInput = document.getElementById("password-input");
+  const errorMessage = document.getElementById("error-message");
+  const logoutBtn = document.getElementById("logout-btn");
+  const channelsDiv = document.getElementById("channels");
+  const favoritesSection = document.getElementById("favorites");
+  const favoritesList = document.getElementById("favorites-list");
+  const searchBox = document.getElementById("search-box");
+  const currentChannelDiv = document.getElementById("current-channel");
+  const player = document.getElementById("player");
+  const loading = document.getElementById("loading");
+  const errorMsg = document.getElementById("error-msg");
+  const fullscreenBtn = document.getElementById("fullscreen-btn");
+  const exitFullscreenBtn = document.getElementById("exit-fullscreen-btn");
+  const refreshBtn = document.getElementById("refresh-btn");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const toast = document.getElementById("toast");
+  const shortcutHint = document.getElementById("shortcut-hint");
+
+  // ========== STATE ==========
+  let currentButton = null;
+  let currentChannelId = null;
+  let currentChannelIndex = 0;
+  let favorites = [];
+  let visibleChannels = [...channels];
+  let isFullscreen = false;
+
+  // ========== UTILITY FUNCTIONS ==========
+  function showToast(message, duration = 2000) {
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => {
+      toast.classList.remove("show");
+    }, duration);
+  }
+
+  function getStreamUrl(id, folder) {
+    return `https://dlhd.link/${folder}/stream-${id}.php`;
+  }
+
+  function saveToLocalStorage(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      console.error("Failed to save to localStorage", e);
+    }
+  }
+
+  function loadFromLocalStorage(key, defaultValue = null) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (e) {
+      console.error("Failed to load from localStorage", e);
+      return defaultValue;
+    }
+  }
+
+  // ========== AUTHENTICATION ==========
+  function checkAuth() {
+    const authData = loadFromLocalStorage(CONFIG.SESSION_KEY);
+    if (authData) {
+      const { timestamp } = authData;
+      const now = Date.now();
+      
+      if (now - timestamp < CONFIG.SESSION_DURATION) {
+        showApp();
+        return true;
+      } else {
+        localStorage.removeItem(CONFIG.SESSION_KEY);
+      }
+    }
+    return false;
+  }
+
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const enteredPassword = passwordInput.value;
+
+    if (enteredPassword === CONFIG.PASSWORD) {
+      saveToLocalStorage(CONFIG.SESSION_KEY, { timestamp: Date.now() });
+      showApp();
+      passwordInput.value = "";
+      errorMessage.classList.remove("show");
+    } else {
+      errorMessage.classList.add("show");
+      passwordInput.value = "";
+      passwordInput.focus();
+      setTimeout(() => errorMessage.classList.remove("show"), 3000);
+    }
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    if (confirm("Are you sure you want to logout?")) {
+      localStorage.removeItem(CONFIG.SESSION_KEY);
+      app.classList.remove("visible");
+      loginScreen.classList.remove("hidden");
+      player.src = "";
+      passwordInput.focus();
+      showToast("Logged out successfully");
+    }
+  });
+
+  function showApp() {
+    loginScreen.classList.add("hidden");
+    app.classList.add("visible");
+    initializePlayer();
+    
+    if (!isIOS) {
+      setTimeout(() => {
+        shortcutHint.classList.add("show");
+        setTimeout(() => shortcutHint.classList.remove("show"), 4000);
+      }, 1000);
+    }
+  }
+
+  // ========== FAVORITES ==========
+  function loadFavorites() {
+    favorites = loadFromLocalStorage(CONFIG.FAVORITES_KEY, []);
+  }
+
+  function saveFavorites() {
+    saveToLocalStorage(CONFIG.FAVORITES_KEY, favorites);
+  }
+
+  function toggleFavorite(channelId, event) {
+    event.stopPropagation();
+    const index = favorites.indexOf(channelId);
+    
+    if (index === -1) {
+      favorites.push(channelId);
+      showToast("⭐ Added to favorites");
+    } else {
+      favorites.splice(index, 1);
+      showToast("Removed from favorites");
+    }
+    
+    saveFavorites();
+    renderChannels();
+  }
+
+  function isFavorite(channelId) {
+    return favorites.includes(channelId);
+  }
+
+  // ========== PLAYER FUNCTIONS ==========
+  function showLoading() {
+    loading.style.display = "block";
+    errorMsg.style.display = "none";
+  }
+
+  function hideLoading() {
+    loading.style.display = "none";
+  }
+
+  function playChannel(id, button, channelName) {
+    showLoading();
+    
+    if (currentButton) currentButton.classList.remove("active");
+    currentButton = button;
+    button.classList.add("active");
+    
+    currentChannelId = id;
+    currentChannelIndex = visibleChannels.findIndex(ch => ch.id === id);
+    currentChannelDiv.textContent = `▶ ${channelName}`;
+    
+    player.src = getStreamUrl(id, folders[0]);
+    
+    setTimeout(hideLoading, 3000);
+    
+    saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
+    showToast(`Now playing: ${channelName}`);
+  }
+
+  function refreshStream() {
+    if (currentChannelId) {
+      showLoading();
+      const currentSrc = player.src;
+      player.src = "";
+      setTimeout(() => {
+        player.src = currentSrc;
+        setTimeout(hideLoading, 2000);
+      }, 100);
+      showToast("🔄 Refreshing stream...");
+    }
+  }
+
+  function playNextChannel() {
+    if (visibleChannels.length === 0) return;
+    
+    currentChannelIndex = (currentChannelIndex + 1) % visibleChannels.length;
+    const nextChannel = visibleChannels[currentChannelIndex];
+    const button = document.querySelector(`[data-channel-id="${nextChannel.id}"]`);
+    if (button) {
+      playChannel(nextChannel.id, button, nextChannel.name);
+    }
+  }
+
+  function playPrevChannel() {
+    if (visibleChannels.length === 0) return;
+    
+    currentChannelIndex = (currentChannelIndex - 1 + visibleChannels.length) % visibleChannels.length;
+    const prevChannel = visibleChannels[currentChannelIndex];
+    const button = document.querySelector(`[data-channel-id="${prevChannel.id}"]`);
+    if (button) {
+      playChannel(prevChannel.id, button, prevChannel.name);
+    }
+  }
+
+  // ========== FULLSCREEN HANDLING ==========
+  function toggleFullscreen() {
+    if (isIOS || isSafari) {
+      // iOS/Safari: Use custom fullscreen mode
+      if (!isFullscreen) {
+        document.body.classList.add('ios-fullscreen');
+        isFullscreen = true;
+        fullscreenBtn.textContent = "⛶ Full";
+        showToast("📱 Fullscreen mode (tap X to exit)");
+      } else {
+        exitIOSFullscreen();
+      }
+    } else {
+      // Desktop: Use native fullscreen API
+      const container = document.getElementById("player-container");
+      
+      if (!document.fullscreenElement) {
+        container.requestFullscreen().catch(err => {
+          showToast("Fullscreen not available");
+        });
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  function exitIOSFullscreen() {
+    document.body.classList.remove('ios-fullscreen');
+    isFullscreen = false;
+    fullscreenBtn.textContent = "⛶ Full";
+    showToast("Exited fullscreen");
+  }
+
+  exitFullscreenBtn.addEventListener("click", exitIOSFullscreen);
+
+  // Listen for native fullscreen changes
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) {
+      fullscreenBtn.textContent = "⛶ Full";
+    } else {
+      fullscreenBtn.textContent = "⛶ Exit";
+    }
+  });
+
+  // ========== SEARCH ==========
+  function filterChannels(searchTerm) {
+    const term = searchTerm.toLowerCase().trim();
+    
+    if (!term) {
+      visibleChannels = [...channels];
+    } else {
+      visibleChannels = channels.filter(ch => 
+        ch.name.toLowerCase().includes(term) ||
+        ch.category.toLowerCase().includes(term)
+      );
+    }
+    
+    renderChannels();
+    
+    if (visibleChannels.length === 0) {
+      showToast("No channels found");
+    }
+  }
+
+  // ========== RENDER ==========
+  function renderChannels() {
+    channelsDiv.innerHTML = "";
+    favoritesList.innerHTML = "";
+    
+    const favoriteChannels = channels.filter(ch => isFavorite(ch.id));
+    const regularChannels = visibleChannels.filter(ch => !isFavorite(ch.id));
+    
+    if (favoriteChannels.length > 0) {
+      favoritesSection.style.display = "block";
+      favoriteChannels.forEach(ch => {
+        const btn = createChannelButton(ch, true);
+        favoritesList.appendChild(btn);
+      });
+    } else {
+      favoritesSection.style.display = "none";
+    }
+    
+    regularChannels.forEach(ch => {
+      const btn = createChannelButton(ch, false);
+      channelsDiv.appendChild(btn);
+    });
+  }
+
+  function createChannelButton(channel, isFav) {
+    const btn = document.createElement("button");
+    btn.className = "channel-btn";
+    btn.textContent = channel.name;
+    btn.dataset.channelId = channel.id;
+    btn.onclick = () => playChannel(channel.id, btn, channel.name);
+    
+    const star = document.createElement("span");
+    star.className = "favorite-star";
+    star.textContent = isFavorite(channel.id) ? "⭐" : "☆";
+    star.onclick = (e) => toggleFavorite(channel.id, e);
+    btn.appendChild(star);
+    
+    return btn;
+  }
+
+  // ========== KEYBOARD SHORTCUTS ==========
+  document.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT") return;
+    
+    switch(e.key) {
+      case "f":
+      case "F":
+        e.preventDefault();
+        toggleFullscreen();
+        break;
+      case "ArrowRight":
+        e.preventDefault();
+        playNextChannel();
+        break;
+      case "ArrowLeft":
+        e.preventDefault();
+        playPrevChannel();
+        break;
+      case "r":
+      case "R":
+        e.preventDefault();
+        refreshStream();
+        break;
+      case "Escape":
+        if (isFullscreen) {
+          exitIOSFullscreen();
+        } else if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        break;
+    }
+  });
+
+  // ========== EVENT LISTENERS ==========
+  searchBox.addEventListener("input", (e) => {
+    filterChannels(e.target.value);
+  });
+
+  refreshBtn.addEventListener("click", refreshStream);
+  fullscreenBtn.addEventListener("click", toggleFullscreen);
+  prevBtn.addEventListener("click", playPrevChannel);
+  nextBtn.addEventListener("click", playNextChannel);
+
+  // Prevent bounce scrolling on iOS
+  if (isIOS) {
+    document.body.addEventListener('touchmove', (e) => {
+      if (isFullscreen) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+
+  // ========== INITIALIZATION ==========
+  function initializePlayer() {
+    loadFavorites();
+    renderChannels();
+    
+    const lastChannelId = loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
+    const defaultChannel = lastChannelId 
+      ? channels.find(ch => ch.id == lastChannelId) || channels[0]
+      : channels[0];
+    
+    const defaultButton = document.querySelector(`[data-channel-id="${defaultChannel.id}"]`);
+    if (defaultButton) {
+      playChannel(defaultChannel.id, defaultButton, defaultChannel.name);
+    }
+  }
+
+  // ========== START APP ==========
+  if (!checkAuth()) {
+    passwordInput.focus();
+  }
+</script>
+
+</body>
+</html>      font-size: 28px;
       font-weight: 600;
     }
 
@@ -965,6 +1959,7 @@
 
 </body>
 </html>
+
 
 
 
