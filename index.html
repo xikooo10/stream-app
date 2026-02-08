@@ -382,34 +382,6 @@
       transform: translateY(0);
     }
 
-    .favorites-section {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #333;
-    }
-
-    .favorites-label {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .favorite-star {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      z-index: 5;
-      padding: 4px;
-    }
-
-    button.channel-btn:hover .favorite-star {
-      display: block;
-    }
-
     /* Keyboard shortcut hint */
     .shortcut-hint {
       position: fixed;
@@ -549,11 +521,6 @@
       </div>
     </div>
 
-    <div id="favorites" class="favorites-section" style="display: none;">
-      <div class="favorites-label">⭐ Favorites</div>
-      <div id="favorites-list"></div>
-    </div>
-
     <div id="channels"></div>
   </div>
 
@@ -588,7 +555,6 @@
     PASSWORD: "imin",
     SESSION_KEY: "stream_auth",
     SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
-    FAVORITES_KEY: "stream_favorites",
     LAST_CHANNEL_KEY: "lastChannel"
   };
 
@@ -617,8 +583,6 @@
   const errorMessage = document.getElementById("error-message");
   const logoutBtn = document.getElementById("logout-btn");
   const channelsDiv = document.getElementById("channels");
-  const favoritesSection = document.getElementById("favorites");
-  const favoritesList = document.getElementById("favorites-list");
   const searchBox = document.getElementById("search-box");
   const currentChannelDiv = document.getElementById("current-channel");
   const player = document.getElementById("player");
@@ -635,7 +599,6 @@
   let currentButton = null;
   let currentChannelId = null;
   let currentChannelIndex = 0;
-  let favorites = [];
   let visibleChannels = [...channels];
 
   // ========== UTILITY FUNCTIONS ==========
@@ -722,35 +685,6 @@
       shortcutHint.classList.add("show");
       setTimeout(() => shortcutHint.classList.remove("show"), 4000);
     }, 1000);
-  }
-
-  // ========== FAVORITES ==========
-  function loadFavorites() {
-    favorites = loadFromLocalStorage(CONFIG.FAVORITES_KEY, []);
-  }
-
-  function saveFavorites() {
-    saveToLocalStorage(CONFIG.FAVORITES_KEY, favorites);
-  }
-
-  function toggleFavorite(channelId, event) {
-    event.stopPropagation();
-    const index = favorites.indexOf(channelId);
-    
-    if (index === -1) {
-      favorites.push(channelId);
-      showToast("⭐ Added to favorites");
-    } else {
-      favorites.splice(index, 1);
-      showToast("Removed from favorites");
-    }
-    
-    saveFavorites();
-    renderChannels();
-  }
-
-  function isFavorite(channelId) {
-    return favorites.includes(channelId);
   }
 
   // ========== PLAYER FUNCTIONS ==========
@@ -859,42 +793,20 @@
   // ========== RENDER ==========
   function renderChannels() {
     channelsDiv.innerHTML = "";
-    favoritesList.innerHTML = "";
     
-    const favoriteChannels = channels.filter(ch => isFavorite(ch.id));
-    const regularChannels = visibleChannels.filter(ch => !isFavorite(ch.id));
-    
-    // Render favorites
-    if (favoriteChannels.length > 0) {
-      favoritesSection.style.display = "block";
-      favoriteChannels.forEach(ch => {
-        const btn = createChannelButton(ch, true);
-        favoritesList.appendChild(btn);
-      });
-    } else {
-      favoritesSection.style.display = "none";
-    }
-    
-    // Render regular channels
-    regularChannels.forEach(ch => {
-      const btn = createChannelButton(ch, false);
+    // Render all visible channels
+    visibleChannels.forEach(ch => {
+      const btn = createChannelButton(ch);
       channelsDiv.appendChild(btn);
     });
   }
 
-  function createChannelButton(channel, isFav) {
+  function createChannelButton(channel) {
     const btn = document.createElement("button");
     btn.className = "channel-btn";
     btn.textContent = channel.name;
     btn.dataset.channelId = channel.id;
     btn.onclick = () => playChannel(channel.id, btn, channel.name);
-    
-    // Add favorite star
-    const star = document.createElement("span");
-    star.className = "favorite-star";
-    star.textContent = isFavorite(channel.id) ? "⭐" : "☆";
-    star.onclick = (e) => toggleFavorite(channel.id, e);
-    btn.appendChild(star);
     
     return btn;
   }
@@ -943,7 +855,6 @@
 
   // ========== INITIALIZATION ==========
   function initializePlayer() {
-    loadFavorites();
     renderChannels();
     
     const lastChannelId = loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
