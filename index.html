@@ -5,9 +5,7 @@
   <title>Sports Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0a0a0a">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
   
   <style>
     * { box-sizing: border-box; }
@@ -17,7 +15,6 @@
       background: #0a0a0a;
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -35,6 +32,648 @@
       z-index: 1000;
     }
 
+    #login-screen.hidden {
+      display: none;
+    }
+
+    .login-box {
+      background: #1a1a1a;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .login-box h1 {
+      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .login-box .subtitle {
+      color: #888;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      background: #2a2a2a;
+      border: 2px solid #333;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .login-box input:focus {
+      outline: none;
+      border-color: #e50914;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 14px;
+      background: #e50914;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .login-box button:active {
+      transform: scale(0.98);
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      margin-top: 12px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: shake 0.4s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    /* Main App */
+    #app {
+      display: none;
+    }
+
+    #app.visible {
+      display: block;
+    }
+
+    #header {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    #current-channel {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e50914;
+      flex: 1;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .control-button {
+      padding: 8px 16px;
+      background: #2a2a2a;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .control-button:active {
+      transform: scale(0.95);
+      background: #3a3a3a;
+    }
+
+    #search-box {
+      padding: 8px 12px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      color: white;
+      font-size: 14px;
+      width: 200px;
+    }
+
+    #search-box:focus {
+      outline: none;
+      border-color: #e50914;
+    }
+
+    #channels,
+    #favorites-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 4px;
+    }
+
+    #channels {
+      max-height: 200px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    button.channel-btn {
+      padding: 10px 16px;
+      background: #2a2a2a;
+      color: #fff;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    button.channel-btn:active {
+      transform: scale(0.95);
+    }
+
+    button.channel-btn.active {
+      background: #e50914;
+      border-color: #e50914;
+    }
+
+    .favorite-star {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      padding: 4px;
+    }
+
+    .favorites-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+
+    .favorites-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    #player-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 150px);
+      background: #000;
+    }
+
+    body.ios-fullscreen #header {
+      display: none;
+    }
+
+    body.ios-fullscreen #player-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+    }
+
+    body.ios-fullscreen #exit-fullscreen-btn {
+      display: block;
+    }
+
+    #exit-fullscreen-btn {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: none;
+      z-index: 10;
+    }
+
+    .spinner {
+      border: 3px solid #333;
+      border-top: 3px solid #e50914;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #controls-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .control-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      padding: 8px 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2a2a2a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .login-box { padding: 30px 20px; }
+      #header { padding: 10px; }
+      .header-top { flex-direction: column; }
+      #search-box { width: 100%; }
+      #current-channel { text-align: center; }
+      button.channel-btn { 
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+      #player-container { height: calc(100vh - 220px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>⚽ Sports Stream</h1>
+    <p class="subtitle">Your personal sports streaming hub</p>
+    <form id="login-form">
+      <input 
+        type="password" 
+        id="password-input" 
+        placeholder="Enter password"
+        autocomplete="off"
+      >
+      <button type="submit">🔓 Access Streams</button>
+    </form>
+    <div class="error-message" id="error-message">
+      ❌ Incorrect password
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+  <div id="header">
+    <div class="header-top">
+      <div id="current-channel">Select a channel</div>
+      <div class="header-controls">
+        <input type="text" id="search-box" placeholder="🔍 Search...">
+        <button class="control-button" id="refresh-btn">🔄</button>
+        <button class="control-button" id="fullscreen-btn">⛶</button>
+        <button class="control-button" id="logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <div id="favorites" class="favorites-section" style="display: none;">
+      <div class="favorites-label">⭐ FAVORITES</div>
+      <div id="favorites-list"></div>
+    </div>
+
+    <div id="channels"></div>
+  </div>
+
+  <div id="player-container">
+    <button id="exit-fullscreen-btn">✕ Exit</button>
+    
+    <div id="loading">
+      <div class="spinner"></div>
+      <div>Loading...</div>
+    </div>
+    
+    <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    
+    <div id="controls-overlay">
+      <button class="control-btn" id="prev-btn">⏮</button>
+      <button class="control-btn" id="next-btn">⏭</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // PASSWORD
+  const PASSWORD = "imin";
+
+  // CHANNELS
+  const channels = [
+    { name: "SPORT TV1", id: 49 },
+    { name: "SPORT TV2", id: 74 },
+    { name: "SPORT TV3", id: 454 },
+    { name: "SPORT TV4", id: 289 },
+    { name: "SPORT TV5", id: 290 },
+    { name: "SPORT TV6", id: 291 },
+    { name: "DAZN 1", id: 455 },
+    { name: "DAZN 2", id: 456 },
+    { name: "DAZN 3", id: 457 },
+    { name: "DAZN 4", id: 458 },
+    { name: "DAZN 5", id: 459 },
+    { name: "BTV", id: 380 }
+  ];
+
+  const folders = ["stream", "watch", "player", "cast"];
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  // DOM ELEMENTS
+  const loginScreen = document.getElementById("login-screen");
+  const app = document.getElementById("app");
+  const loginForm = document.getElementById("login-form");
+  const passwordInput = document.getElementById("password-input");
+  const errorMessage = document.getElementById("error-message");
+  const logoutBtn = document.getElementById("logout-btn");
+  const channelsDiv = document.getElementById("channels");
+  const favoritesSection = document.getElementById("favorites");
+  const favoritesList = document.getElementById("favorites-list");
+  const searchBox = document.getElementById("search-box");
+  const currentChannelDiv = document.getElementById("current-channel");
+  const player = document.getElementById("player");
+  const loading = document.getElementById("loading");
+  const fullscreenBtn = document.getElementById("fullscreen-btn");
+  const exitFullscreenBtn = document.getElementById("exit-fullscreen-btn");
+  const refreshBtn = document.getElementById("refresh-btn");
+  const prevBtn = document.getElementById("prev-btn");
+  const nextBtn = document.getElementById("next-btn");
+  const toast = document.getElementById("toast");
+
+  // STATE
+  let currentButton = null;
+  let currentChannelId = null;
+  let currentChannelIndex = 0;
+  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+  let visibleChannels = [...channels];
+  let isFullscreen = false;
+
+  // UTILS
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2000);
+  }
+
+  function getStreamUrl(id) {
+    return `https://dlhd.link/${folders[0]}/stream-${id}.php`;
+  }
+
+  // LOGIN
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    
+    if (passwordInput.value === PASSWORD) {
+      localStorage.setItem("loggedIn", "true");
+      loginScreen.classList.add("hidden");
+      app.classList.add("visible");
+      passwordInput.value = "";
+      errorMessage.classList.remove("show");
+      initApp();
+    } else {
+      errorMessage.classList.add("show");
+      passwordInput.value = "";
+      passwordInput.focus();
+    }
+  });
+
+  // LOGOUT
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("loggedIn");
+    app.classList.remove("visible");
+    loginScreen.classList.remove("hidden");
+    player.src = "";
+    passwordInput.focus();
+  });
+
+  // CHECK LOGIN ON LOAD
+  if (localStorage.getItem("loggedIn") === "true") {
+    loginScreen.classList.add("hidden");
+    app.classList.add("visible");
+    initApp();
+  } else {
+    passwordInput.focus();
+  }
+
+  // FAVORITES
+  function toggleFavorite(id, e) {
+    e.stopPropagation();
+    const idx = favorites.indexOf(id);
+    if (idx === -1) {
+      favorites.push(id);
+      showToast("⭐ Added to favorites");
+    } else {
+      favorites.splice(idx, 1);
+      showToast("Removed from favorites");
+    }
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+    renderChannels();
+  }
+
+  // PLAYER
+  function playChannel(id, btn, name) {
+    loading.style.display = "block";
+    
+    if (currentButton) currentButton.classList.remove("active");
+    currentButton = btn;
+    btn.classList.add("active");
+    
+    currentChannelId = id;
+    currentChannelIndex = visibleChannels.findIndex(ch => ch.id === id);
+    currentChannelDiv.textContent = `▶ ${name}`;
+    
+    player.src = getStreamUrl(id);
+    
+    setTimeout(() => loading.style.display = "none", 3000);
+    localStorage.setItem("lastChannel", id);
+    showToast(`Playing: ${name}`);
+  }
+
+  function refreshStream() {
+    if (!currentChannelId) return;
+    loading.style.display = "block";
+    const src = player.src;
+    player.src = "";
+    setTimeout(() => {
+      player.src = src;
+      setTimeout(() => loading.style.display = "none", 2000);
+    }, 100);
+    showToast("🔄 Refreshing...");
+  }
+
+  function playNext() {
+    if (visibleChannels.length === 0) return;
+    currentChannelIndex = (currentChannelIndex + 1) % visibleChannels.length;
+    const ch = visibleChannels[currentChannelIndex];
+    const btn = document.querySelector(`[data-id="${ch.id}"]`);
+    if (btn) playChannel(ch.id, btn, ch.name);
+  }
+
+  function playPrev() {
+    if (visibleChannels.length === 0) return;
+    currentChannelIndex = (currentChannelIndex - 1 + visibleChannels.length) % visibleChannels.length;
+    const ch = visibleChannels[currentChannelIndex];
+    const btn = document.querySelector(`[data-id="${ch.id}"]`);
+    if (btn) playChannel(ch.id, btn, ch.name);
+  }
+
+  // FULLSCREEN
+  function toggleFullscreen() {
+    if (isIOS) {
+      if (!isFullscreen) {
+        document.body.classList.add('ios-fullscreen');
+        isFullscreen = true;
+        showToast("Fullscreen ON");
+      } else {
+        exitFullscreen();
+      }
+    } else {
+      if (!document.fullscreenElement) {
+        document.getElementById("player-container").requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    }
+  }
+
+  function exitFullscreen() {
+    document.body.classList.remove('ios-fullscreen');
+    isFullscreen = false;
+    showToast("Fullscreen OFF");
+  }
+
+  // SEARCH
+  function filterChannels(term) {
+    term = term.toLowerCase().trim();
+    visibleChannels = term ? channels.filter(ch => ch.name.toLowerCase().includes(term)) : [...channels];
+    renderChannels();
+  }
+
+  // RENDER
+  function renderChannels() {
+    channelsDiv.innerHTML = "";
+    favoritesList.innerHTML = "";
+    
+    const favs = channels.filter(ch => favorites.includes(ch.id));
+    const regular = visibleChannels.filter(ch => !favorites.includes(ch.id));
+    
+    if (favs.length > 0) {
+      favoritesSection.style.display = "block";
+      favs.forEach(ch => favoritesList.appendChild(createBtn(ch)));
+    } else {
+      favoritesSection.style.display = "none";
+    }
+    
+    regular.forEach(ch => channelsDiv.appendChild(createBtn(ch)));
+  }
+
+  function createBtn(ch) {
+    const btn = document.createElement("button");
+    btn.className = "channel-btn";
+    btn.textContent = ch.name;
+    btn.dataset.id = ch.id;
+    btn.onclick = () => playChannel(ch.id, btn, ch.name);
+    
+    const star = document.createElement("span");
+    star.className = "favorite-star";
+    star.textContent = favorites.includes(ch.id) ? "⭐" : "☆";
+    star.onclick = (e) => toggleFavorite(ch.id, e);
+    btn.appendChild(star);
+    
+    return btn;
+  }
+
+  // EVENT LISTENERS
+  searchBox.addEventListener("input", (e) => filterChannels(e.target.value));
+  refreshBtn.addEventListener("click", refreshStream);
+  fullscreenBtn.addEventListener("click", toggleFullscreen);
+  exitFullscreenBtn.addEventListener("click", exitFullscreen);
+  prevBtn.addEventListener("click", playPrev);
+  nextBtn.addEventListener("click", playNext);
+
+  // KEYBOARD
+  document.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT") return;
+    if (e.key === "f" || e.key === "F") toggleFullscreen();
+    if (e.key === "ArrowRight") playNext();
+    if (e.key === "ArrowLeft") playPrev();
+    if (e.key === "r" || e.key === "R") refreshStream();
+    if (e.key === "Escape" && isFullscreen) exitFullscreen();
+  });
+
+  // INIT
+  function initApp() {
+    renderChannels();
+    const lastId = parseInt(localStorage.getItem("lastChannel"));
+    const ch = channels.find(c => c.id === lastId) || channels[0];
+    const btn = document.querySelector(`[data-id="${ch.id}"]`);
+    if (btn) playChannel(ch.id, btn, ch.name);
+  }
+</script>
+
+</body>
+</html>
     #login-screen.hidden {
       display: none;
     }
@@ -2958,6 +3597,7 @@
 
 </body>
 </html>
+
 
 
 
