@@ -3,35 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <title>Sports Stream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0a0a">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
   
   <style>
-    * { 
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; }
     
-    html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
     body {
       margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
       background: #0a0a0a;
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
-      position: fixed;
+      overflow-x: hidden;
     }
 
     /* Login Screen */
@@ -104,8 +88,13 @@
       transition: all 0.2s;
     }
 
+    .login-box button:hover {
+      background: #f40612;
+      transform: translateY(-1px);
+    }
+
     .login-box button:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
 
     .error-message {
@@ -129,27 +118,19 @@
     /* Main App */
     #app {
       display: none;
-      width: 100%;
-      height: 100vh;
-      overflow: hidden;
-      position: fixed;
-      top: 0;
-      left: 0;
     }
 
     #app.visible {
-      display: flex;
-      flex-direction: column;
+      display: block;
     }
 
     #header {
       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
       padding: 12px 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      flex-shrink: 0;
-      overflow-y: auto;
-      max-height: 40vh;
-      z-index: 50;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .header-top {
@@ -157,15 +138,12 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 8px;
     }
 
     .header-controls {
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-wrap: wrap;
     }
 
     #current-channel {
@@ -182,11 +160,13 @@
       color: white;
       font-size: 14px;
       width: 200px;
+      transition: all 0.2s;
     }
 
     #search-box:focus {
       outline: none;
       border-color: #e50914;
+      width: 250px;
     }
 
     #fullscreen-btn,
@@ -200,6 +180,14 @@
       cursor: pointer;
       font-size: 14px;
       white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    #fullscreen-btn:hover,
+    #refresh-btn:hover,
+    #logout-btn:hover {
+      background: #3a3a3a;
+      border-color: #666;
     }
 
     #channels {
@@ -209,6 +197,26 @@
       max-height: 200px;
       overflow-y: auto;
       padding: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: #444 #1a1a1a;
+    }
+
+    #channels::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #channels::-webkit-scrollbar-track {
+      background: #1a1a1a;
+      border-radius: 4px;
+    }
+
+    #channels::-webkit-scrollbar-thumb {
+      background: #444;
+      border-radius: 4px;
+    }
+
+    #channels::-webkit-scrollbar-thumb:hover {
+      background: #555;
     }
 
     button.channel-btn {
@@ -225,6 +233,13 @@
       position: relative;
     }
 
+    button.channel-btn:hover {
+      background: #3a3a3a;
+      border-color: #555;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
     button.channel-btn.active {
       background: #e50914;
       border-color: #e50914;
@@ -237,59 +252,21 @@
       font-size: 10px;
     }
 
-    .favorite-star {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      font-size: 12px;
-      cursor: pointer;
-      z-index: 5;
-      padding: 4px;
+    button.channel-btn.hidden {
+      display: none;
     }
 
-    .favorites-section {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid #333;
-    }
-
-    .favorites-label {
-      font-size: 12px;
-      color: #888;
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* CRITICAL: Player container for rotation */
     #player-container {
       position: relative;
-      flex: 1;
-      background: #000;
       width: 100%;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Video wrapper - THIS IS KEY for rotation */
-    #video-wrapper {
-      position: relative;
-      width: 100%;
-      height: 100%;
+      height: calc(100vh - 150px);
       background: #000;
     }
 
-    /* The actual video iframe */
-    #player {
-      position: absolute;
-      top: 0;
-      left: 0;
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
-      background: #000;
     }
 
     #loading {
@@ -302,7 +279,6 @@
       text-align: center;
       display: none;
       z-index: 10;
-      pointer-events: none;
     }
 
     .spinner {
@@ -338,12 +314,18 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
+      background: rgba(0,0,0,0.8);
       padding: 12px 20px;
       border-radius: 8px;
       display: flex;
       gap: 12px;
-      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 20;
+    }
+
+    #player-container:hover #controls-overlay {
+      opacity: 1;
     }
 
     .control-btn {
@@ -353,6 +335,31 @@
       font-size: 24px;
       cursor: pointer;
       padding: 8px;
+      transition: transform 0.2s;
+    }
+
+    .control-btn:hover {
+      transform: scale(1.2);
+    }
+
+    #quality-selector {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 8px;
+      border-radius: 6px;
+      display: none;
+      z-index: 20;
+    }
+
+    #quality-selector select {
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
     .toast {
@@ -375,6 +382,35 @@
       transform: translateY(0);
     }
 
+    .favorites-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #333;
+    }
+
+    .favorites-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .favorite-star {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 5;
+      padding: 4px;
+    }
+
+    button.channel-btn:hover .favorite-star {
+      display: block;
+    }
+
+    /* Keyboard shortcut hint */
     .shortcut-hint {
       position: fixed;
       bottom: 20px;
@@ -393,32 +429,6 @@
       opacity: 1;
     }
 
-    /* Rotate instruction overlay */
-    #rotate-hint {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.9);
-      color: white;
-      padding: 30px;
-      border-radius: 12px;
-      text-align: center;
-      z-index: 200;
-      display: none;
-      font-size: 18px;
-    }
-
-    #rotate-hint.show {
-      display: block;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
     /* Mobile optimizations */
     @media (max-width: 768px) {
       .login-box {
@@ -427,15 +437,24 @@
 
       #header {
         padding: 10px;
-        max-height: 35vh;
       }
 
       .header-top {
         flex-direction: column;
+        gap: 8px;
         align-items: stretch;
       }
 
+      .header-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
       #search-box {
+        width: 100%;
+      }
+
+      #search-box:focus {
         width: 100%;
       }
 
@@ -447,83 +466,54 @@
       button.channel-btn {
         padding: 10px 14px;
         font-size: 13px;
+        flex: 1 1 calc(50% - 4px);
+        min-width: 120px;
       }
 
       #channels {
         max-height: 150px;
       }
+      
+      #player-container {
+        height: calc(100vh - 200px);
+      }
+
+      #controls-overlay {
+        opacity: 1;
+      }
 
       .shortcut-hint {
         display: none;
       }
-
-      #controls-overlay {
-        bottom: 10px;
-        padding: 10px 16px;
-      }
-
-      .control-btn {
-        font-size: 20px;
-        padding: 6px;
-      }
     }
 
-    /* LANDSCAPE MODE - THIS IS THE KEY */
-    @media (orientation: landscape) and (max-width: 926px) {
-      #app {
-        flex-direction: row;
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+      #player-container {
+        height: calc(100vh - 80px);
       }
 
       #header {
-        width: 250px;
-        max-height: 100vh;
-        overflow-y: auto;
+        padding: 6px 10px;
       }
 
-      #player-container {
-        flex: 1;
-        width: calc(100vw - 250px);
+      button.channel-btn {
+        padding: 6px 12px;
+        font-size: 12px;
       }
 
-      #video-wrapper {
-        width: 100%;
-        height: 100%;
-      }
-
-      #player {
-        width: 100%;
-        height: 100%;
+      #channels {
+        max-height: 80px;
       }
     }
 
-    /* PORTRAIT MODE */
-    @media (orientation: portrait) {
-      #player-container {
-        height: 100%;
-      }
-
-      #video-wrapper {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    /* Force landscape video aspect */
-    @media (orientation: landscape) {
-      body {
-        height: 100vh;
-        width: 100vw;
-      }
+    /* Dark mode friendly */
+    @media (prefers-color-scheme: light) {
+      /* Keep dark theme always */
     }
   </style>
 </head>
 <body>
-
-<!-- Rotate hint for portrait users -->
-<div id="rotate-hint">
-  <div style="font-size: 48px; margin-bottom: 16px;">📱 ↻</div>
-  <div>Rotate your device for better viewing</div>
-</div>
 
 <!-- Login Screen -->
 <div id="login-screen">
@@ -552,10 +542,10 @@
     <div class="header-top">
       <div id="current-channel">Select a channel</div>
       <div class="header-controls">
-        <input type="text" id="search-box" placeholder="🔍 Search...">
-        <button id="refresh-btn">🔄</button>
-        <button id="fullscreen-btn">⛶</button>
-        <button id="logout-btn">🚪</button>
+        <input type="text" id="search-box" placeholder="🔍 Search channels...">
+        <button id="refresh-btn" title="Refresh stream">🔄</button>
+        <button id="fullscreen-btn" title="Fullscreen (F)">⛶</button>
+        <button id="logout-btn" title="Logout">🚪 Logout</button>
       </div>
     </div>
 
@@ -568,29 +558,21 @@
   </div>
 
   <div id="player-container">
-    <div id="video-wrapper">
-      <div id="loading">
-        <div class="spinner"></div>
-        <div>Loading stream...</div>
-      </div>
-      <div id="error-msg">
-        <p style="font-size: 48px; margin: 0;">⚠️</p>
-        <p style="margin: 12px 0;">Stream unavailable</p>
-        <small>Try another channel or refresh</small>
-      </div>
-      <iframe 
-        id="player" 
-        allowfullscreen 
-        allow="autoplay; fullscreen; picture-in-picture; accelerometer; gyroscope" 
-        playsinline
-        webkitallowfullscreen
-        mozallowfullscreen
-      ></iframe>
+    <div id="loading">
+      <div class="spinner"></div>
+      <div>Loading stream...</div>
+      <small style="color: #666; margin-top: 8px;">This may take a few seconds</small>
     </div>
+    <div id="error-msg">
+      <p style="font-size: 48px; margin: 0;">⚠️</p>
+      <p style="margin: 12px 0;">Stream unavailable</p>
+      <small>Try another channel or refresh</small>
+    </div>
+    <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
     
     <div id="controls-overlay">
-      <button class="control-btn" id="prev-btn">⏮</button>
-      <button class="control-btn" id="next-btn">⏭</button>
+      <button class="control-btn" id="prev-btn" title="Previous (←)">⏮</button>
+      <button class="control-btn" id="next-btn" title="Next (→)">⏭</button>
     </div>
   </div>
 </div>
@@ -605,7 +587,7 @@
   const CONFIG = {
     PASSWORD: "imin",
     SESSION_KEY: "stream_auth",
-    SESSION_DURATION: 24 * 60 * 60 * 1000,
+    SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
     FAVORITES_KEY: "stream_favorites",
     LAST_CHANNEL_KEY: "lastChannel"
   };
@@ -640,9 +622,6 @@
   const searchBox = document.getElementById("search-box");
   const currentChannelDiv = document.getElementById("current-channel");
   const player = document.getElementById("player");
-  const playerContainer = document.getElementById("player-container");
-  const videoWrapper = document.getElementById("video-wrapper");
-  const header = document.getElementById("header");
   const loading = document.getElementById("loading");
   const errorMsg = document.getElementById("error-msg");
   const fullscreenBtn = document.getElementById("fullscreen-btn");
@@ -651,7 +630,6 @@
   const nextBtn = document.getElementById("next-btn");
   const toast = document.getElementById("toast");
   const shortcutHint = document.getElementById("shortcut-hint");
-  const rotateHint = document.getElementById("rotate-hint");
 
   // ========== STATE ==========
   let currentButton = null;
@@ -677,7 +655,7 @@
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-      console.error("Failed to save", e);
+      console.error("Failed to save to localStorage", e);
     }
   }
 
@@ -686,31 +664,10 @@
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
     } catch (e) {
+      console.error("Failed to load from localStorage", e);
       return defaultValue;
     }
   }
-
-  // ========== ORIENTATION DETECTION ==========
-  function checkOrientation() {
-    const isLandscape = window.innerWidth > window.innerHeight;
-    
-    if (!isLandscape && currentChannelId && window.innerWidth < 768) {
-      // Show rotation hint in portrait mode
-      rotateHint.classList.add("show");
-      setTimeout(() => {
-        rotateHint.classList.remove("show");
-      }, 3000);
-    }
-  }
-
-  // Listen for orientation changes
-  window.addEventListener("orientationchange", () => {
-    setTimeout(checkOrientation, 300);
-  });
-
-  window.addEventListener("resize", () => {
-    checkOrientation();
-  });
 
   // ========== AUTHENTICATION ==========
   function checkAuth() {
@@ -753,7 +710,7 @@
       loginScreen.classList.remove("hidden");
       player.src = "";
       passwordInput.focus();
-      showToast("Logged out");
+      showToast("Logged out successfully");
     }
   });
 
@@ -806,6 +763,11 @@
     loading.style.display = "none";
   }
 
+  function showError() {
+    loading.style.display = "none";
+    errorMsg.style.display = "block";
+  }
+
   function playChannel(id, button, channelName) {
     showLoading();
     
@@ -823,9 +785,6 @@
     
     saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
     showToast(`Now playing: ${channelName}`);
-    
-    // Check if should show rotation hint
-    setTimeout(checkOrientation, 1000);
   }
 
   function refreshStream() {
@@ -837,7 +796,7 @@
         player.src = currentSrc;
         setTimeout(hideLoading, 2000);
       }, 100);
-      showToast("🔄 Refreshing...");
+      showToast("🔄 Refreshing stream...");
     }
   }
 
@@ -864,12 +823,16 @@
   }
 
   function toggleFullscreen() {
-    if (videoWrapper.requestFullscreen) {
-      videoWrapper.requestFullscreen();
-    } else if (videoWrapper.webkitRequestFullscreen) {
-      videoWrapper.webkitRequestFullscreen();
-    } else if (videoWrapper.webkitEnterFullscreen) {
-      videoWrapper.webkitEnterFullscreen();
+    const container = document.getElementById("player-container");
+    
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().catch(err => {
+        showToast("Fullscreen not available");
+      });
+      fullscreenBtn.textContent = "⛶";
+    } else {
+      document.exitFullscreen();
+      fullscreenBtn.textContent = "⛶";
     }
   }
 
@@ -881,11 +844,16 @@
       visibleChannels = [...channels];
     } else {
       visibleChannels = channels.filter(ch => 
-        ch.name.toLowerCase().includes(term)
+        ch.name.toLowerCase().includes(term) ||
+        ch.category.toLowerCase().includes(term)
       );
     }
     
     renderChannels();
+    
+    if (visibleChannels.length === 0) {
+      showToast("No channels found");
+    }
   }
 
   // ========== RENDER ==========
@@ -896,27 +864,32 @@
     const favoriteChannels = channels.filter(ch => isFavorite(ch.id));
     const regularChannels = visibleChannels.filter(ch => !isFavorite(ch.id));
     
+    // Render favorites
     if (favoriteChannels.length > 0) {
       favoritesSection.style.display = "block";
       favoriteChannels.forEach(ch => {
-        favoritesList.appendChild(createChannelButton(ch));
+        const btn = createChannelButton(ch, true);
+        favoritesList.appendChild(btn);
       });
     } else {
       favoritesSection.style.display = "none";
     }
     
+    // Render regular channels
     regularChannels.forEach(ch => {
-      channelsDiv.appendChild(createChannelButton(ch));
+      const btn = createChannelButton(ch, false);
+      channelsDiv.appendChild(btn);
     });
   }
 
-  function createChannelButton(channel) {
+  function createChannelButton(channel, isFav) {
     const btn = document.createElement("button");
     btn.className = "channel-btn";
     btn.textContent = channel.name;
     btn.dataset.channelId = channel.id;
     btn.onclick = () => playChannel(channel.id, btn, channel.name);
     
+    // Add favorite star
     const star = document.createElement("span");
     star.className = "favorite-star";
     star.textContent = isFavorite(channel.id) ? "⭐" : "☆";
@@ -928,6 +901,7 @@
 
   // ========== KEYBOARD SHORTCUTS ==========
   document.addEventListener("keydown", (e) => {
+    // Only if not typing in input
     if (e.target.tagName === "INPUT") return;
     
     switch(e.key) {
@@ -949,11 +923,19 @@
         e.preventDefault();
         refreshStream();
         break;
+      case "Escape":
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        break;
     }
   });
 
   // ========== EVENT LISTENERS ==========
-  searchBox.addEventListener("input", (e) => filterChannels(e.target.value));
+  searchBox.addEventListener("input", (e) => {
+    filterChannels(e.target.value);
+  });
+
   refreshBtn.addEventListener("click", refreshStream);
   fullscreenBtn.addEventListener("click", toggleFullscreen);
   prevBtn.addEventListener("click", playPrevChannel);
