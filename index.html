@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Sports Stream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0a0a0a">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
   
@@ -18,7 +16,6 @@
       color: white;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       overflow-x: hidden;
-      -webkit-tap-highlight-color: transparent;
     }
 
     /* Login Screen */
@@ -93,10 +90,11 @@
 
     .login-box button:hover {
       background: #f40612;
+      transform: translateY(-1px);
     }
 
     .login-box button:active {
-      transform: scale(0.98);
+      transform: translateY(0);
     }
 
     .error-message {
@@ -140,23 +138,18 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      flex-wrap: wrap;
-      gap: 8px;
     }
 
     .header-controls {
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-wrap: wrap;
     }
 
     #current-channel {
       font-size: 18px;
       font-weight: 600;
       color: #e50914;
-      flex: 1;
-      min-width: 200px;
     }
 
     #search-box {
@@ -173,9 +166,12 @@
     #search-box:focus {
       outline: none;
       border-color: #e50914;
+      width: 250px;
     }
 
-    .control-button {
+    #fullscreen-btn,
+    #refresh-btn,
+    #logout-btn {
       padding: 8px 16px;
       background: #2a2a2a;
       color: #fff;
@@ -185,20 +181,13 @@
       font-size: 14px;
       white-space: nowrap;
       transition: all 0.2s;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .control-button:active {
-      transform: scale(0.95);
+    #fullscreen-btn:hover,
+    #refresh-btn:hover,
+    #logout-btn:hover {
       background: #3a3a3a;
-    }
-
-    /* iOS specific styles */
-    @supports (-webkit-touch-callout: none) {
-      .control-button {
-        padding: 10px 16px;
-        font-size: 15px;
-      }
+      border-color: #666;
     }
 
     #channels {
@@ -210,7 +199,6 @@
       padding: 4px;
       scrollbar-width: thin;
       scrollbar-color: #444 #1a1a1a;
-      -webkit-overflow-scrolling: touch;
     }
 
     #channels::-webkit-scrollbar {
@@ -227,6 +215,10 @@
       border-radius: 4px;
     }
 
+    #channels::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
     button.channel-btn {
       padding: 10px 16px;
       background: #2a2a2a;
@@ -239,12 +231,13 @@
       transition: all 0.2s;
       white-space: nowrap;
       position: relative;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    button.channel-btn:active {
-      transform: scale(0.95);
+    button.channel-btn:hover {
       background: #3a3a3a;
+      border-color: #555;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
 
     button.channel-btn.active {
@@ -268,40 +261,6 @@
       width: 100%;
       height: calc(100vh - 150px);
       background: #000;
-    }
-
-    /* iOS fullscreen mode */
-    body.ios-fullscreen #header {
-      display: none;
-    }
-
-    body.ios-fullscreen #player-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 9999;
-    }
-
-    body.ios-fullscreen #exit-fullscreen-btn {
-      display: block;
-    }
-
-    #exit-fullscreen-btn {
-      display: none;
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 10000;
-      background: rgba(0,0,0,0.8);
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
     }
 
     iframe {
@@ -360,9 +319,13 @@
       border-radius: 8px;
       display: flex;
       gap: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
       z-index: 20;
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+    }
+
+    #player-container:hover #controls-overlay {
+      opacity: 1;
     }
 
     .control-btn {
@@ -371,13 +334,32 @@
       color: white;
       font-size: 24px;
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 8px;
       transition: transform 0.2s;
-      -webkit-tap-highlight-color: transparent;
     }
 
-    .control-btn:active {
+    .control-btn:hover {
       transform: scale(1.2);
+    }
+
+    #quality-selector {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.8);
+      padding: 8px;
+      border-radius: 6px;
+      display: none;
+      z-index: 20;
+    }
+
+    #quality-selector select {
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
     }
 
     .toast {
@@ -422,9 +404,13 @@
       cursor: pointer;
       z-index: 5;
       padding: 4px;
-      -webkit-tap-highlight-color: transparent;
     }
 
+    button.channel-btn:hover .favorite-star {
+      display: block;
+    }
+
+    /* Keyboard shortcut hint */
     .shortcut-hint {
       position: fixed;
       bottom: 20px;
@@ -455,10 +441,12 @@
 
       .header-top {
         flex-direction: column;
+        gap: 8px;
         align-items: stretch;
       }
 
       .header-controls {
+        flex-wrap: wrap;
         justify-content: center;
       }
 
@@ -466,51 +454,43 @@
         width: 100%;
       }
 
+      #search-box:focus {
+        width: 100%;
+      }
+
       #current-channel {
         font-size: 16px;
         text-align: center;
-        min-width: auto;
       }
 
       button.channel-btn {
-        padding: 12px 14px;
-        font-size: 14px;
+        padding: 10px 14px;
+        font-size: 13px;
         flex: 1 1 calc(50% - 4px);
-        min-width: 130px;
+        min-width: 120px;
       }
 
       #channels {
-        max-height: 180px;
+        max-height: 150px;
       }
       
       #player-container {
-        height: calc(100vh - 220px);
+        height: calc(100vh - 200px);
+      }
+
+      #controls-overlay {
+        opacity: 1;
       }
 
       .shortcut-hint {
         display: none;
-      }
-
-      .control-button {
-        font-size: 13px;
-        padding: 10px 14px;
-      }
-
-      #controls-overlay {
-        bottom: 10px;
-        padding: 10px 16px;
-      }
-
-      .control-btn {
-        font-size: 20px;
-        padding: 6px 10px;
       }
     }
 
     /* Landscape mobile */
     @media (max-width: 768px) and (orientation: landscape) {
       #player-container {
-        height: calc(100vh - 100px);
+        height: calc(100vh - 80px);
       }
 
       #header {
@@ -518,32 +498,18 @@
       }
 
       button.channel-btn {
-        padding: 8px 12px;
+        padding: 6px 12px;
         font-size: 12px;
       }
 
       #channels {
-        max-height: 100px;
-      }
-
-      .header-top {
-        margin-bottom: 6px;
+        max-height: 80px;
       }
     }
 
-    /* iOS safe area */
-    @supports (padding: max(0px)) {
-      body {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-      
-      #player-container {
-        height: calc(100vh - 150px - env(safe-area-inset-bottom));
-      }
-      
-      #controls-overlay {
-        bottom: calc(20px + env(safe-area-inset-bottom));
-      }
+    /* Dark mode friendly */
+    @media (prefers-color-scheme: light) {
+      /* Keep dark theme always */
     }
   </style>
 </head>
@@ -577,9 +543,9 @@
       <div id="current-channel">Select a channel</div>
       <div class="header-controls">
         <input type="text" id="search-box" placeholder="🔍 Search channels...">
-        <button class="control-button" id="refresh-btn" title="Refresh stream">🔄 Refresh</button>
-        <button class="control-button" id="fullscreen-btn" title="Fullscreen">⛶ Full</button>
-        <button class="control-button" id="logout-btn" title="Logout">🚪 Logout</button>
+        <button id="refresh-btn" title="Refresh stream">🔄</button>
+        <button id="fullscreen-btn" title="Fullscreen (F)">⛶</button>
+        <button id="logout-btn" title="Logout">🚪 Logout</button>
       </div>
     </div>
 
@@ -592,8 +558,6 @@
   </div>
 
   <div id="player-container">
-    <button id="exit-fullscreen-btn">✕ Exit Fullscreen</button>
-    
     <div id="loading">
       <div class="spinner"></div>
       <div>Loading stream...</div>
@@ -604,12 +568,11 @@
       <p style="margin: 12px 0;">Stream unavailable</p>
       <small>Try another channel or refresh</small>
     </div>
-    <iframe id="player" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+    <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
     
     <div id="controls-overlay">
-      <button class="control-btn" id="prev-btn" title="Previous">⏮</button>
-      <button class="control-btn" id="play-pause-btn" title="Play/Pause">⏸</button>
-      <button class="control-btn" id="next-btn" title="Next">⏭</button>
+      <button class="control-btn" id="prev-btn" title="Previous (←)">⏮</button>
+      <button class="control-btn" id="next-btn" title="Next (→)">⏭</button>
     </div>
   </div>
 </div>
@@ -624,7 +587,7 @@
   const CONFIG = {
     PASSWORD: "imin",
     SESSION_KEY: "stream_auth",
-    SESSION_DURATION: 24 * 60 * 60 * 1000,
+    SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
     FAVORITES_KEY: "stream_favorites",
     LAST_CHANNEL_KEY: "lastChannel"
   };
@@ -646,10 +609,6 @@
 
   const folders = ["stream", "watch", "player", "cast"];
 
-  // ========== DETECT iOS ==========
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
   // ========== DOM ELEMENTS ==========
   const loginScreen = document.getElementById("login-screen");
   const app = document.getElementById("app");
@@ -666,7 +625,6 @@
   const loading = document.getElementById("loading");
   const errorMsg = document.getElementById("error-msg");
   const fullscreenBtn = document.getElementById("fullscreen-btn");
-  const exitFullscreenBtn = document.getElementById("exit-fullscreen-btn");
   const refreshBtn = document.getElementById("refresh-btn");
   const prevBtn = document.getElementById("prev-btn");
   const nextBtn = document.getElementById("next-btn");
@@ -679,7 +637,6 @@
   let currentChannelIndex = 0;
   let favorites = [];
   let visibleChannels = [...channels];
-  let isFullscreen = false;
 
   // ========== UTILITY FUNCTIONS ==========
   function showToast(message, duration = 2000) {
@@ -761,13 +718,10 @@
     loginScreen.classList.add("hidden");
     app.classList.add("visible");
     initializePlayer();
-    
-    if (!isIOS) {
-      setTimeout(() => {
-        shortcutHint.classList.add("show");
-        setTimeout(() => shortcutHint.classList.remove("show"), 4000);
-      }, 1000);
-    }
+    setTimeout(() => {
+      shortcutHint.classList.add("show");
+      setTimeout(() => shortcutHint.classList.remove("show"), 4000);
+    }, 1000);
   }
 
   // ========== FAVORITES ==========
@@ -807,6 +761,11 @@
 
   function hideLoading() {
     loading.style.display = "none";
+  }
+
+  function showError() {
+    loading.style.display = "none";
+    errorMsg.style.display = "block";
   }
 
   function playChannel(id, button, channelName) {
@@ -863,49 +822,19 @@
     }
   }
 
-  // ========== FULLSCREEN HANDLING ==========
   function toggleFullscreen() {
-    if (isIOS || isSafari) {
-      // iOS/Safari: Use custom fullscreen mode
-      if (!isFullscreen) {
-        document.body.classList.add('ios-fullscreen');
-        isFullscreen = true;
-        fullscreenBtn.textContent = "⛶ Full";
-        showToast("📱 Fullscreen mode (tap X to exit)");
-      } else {
-        exitIOSFullscreen();
-      }
-    } else {
-      // Desktop: Use native fullscreen API
-      const container = document.getElementById("player-container");
-      
-      if (!document.fullscreenElement) {
-        container.requestFullscreen().catch(err => {
-          showToast("Fullscreen not available");
-        });
-      } else {
-        document.exitFullscreen();
-      }
-    }
-  }
-
-  function exitIOSFullscreen() {
-    document.body.classList.remove('ios-fullscreen');
-    isFullscreen = false;
-    fullscreenBtn.textContent = "⛶ Full";
-    showToast("Exited fullscreen");
-  }
-
-  exitFullscreenBtn.addEventListener("click", exitIOSFullscreen);
-
-  // Listen for native fullscreen changes
-  document.addEventListener('fullscreenchange', () => {
+    const container = document.getElementById("player-container");
+    
     if (!document.fullscreenElement) {
-      fullscreenBtn.textContent = "⛶ Full";
+      container.requestFullscreen().catch(err => {
+        showToast("Fullscreen not available");
+      });
+      fullscreenBtn.textContent = "⛶";
     } else {
-      fullscreenBtn.textContent = "⛶ Exit";
+      document.exitFullscreen();
+      fullscreenBtn.textContent = "⛶";
     }
-  });
+  }
 
   // ========== SEARCH ==========
   function filterChannels(searchTerm) {
@@ -935,6 +864,7 @@
     const favoriteChannels = channels.filter(ch => isFavorite(ch.id));
     const regularChannels = visibleChannels.filter(ch => !isFavorite(ch.id));
     
+    // Render favorites
     if (favoriteChannels.length > 0) {
       favoritesSection.style.display = "block";
       favoriteChannels.forEach(ch => {
@@ -945,6 +875,7 @@
       favoritesSection.style.display = "none";
     }
     
+    // Render regular channels
     regularChannels.forEach(ch => {
       const btn = createChannelButton(ch, false);
       channelsDiv.appendChild(btn);
@@ -958,6 +889,7 @@
     btn.dataset.channelId = channel.id;
     btn.onclick = () => playChannel(channel.id, btn, channel.name);
     
+    // Add favorite star
     const star = document.createElement("span");
     star.className = "favorite-star";
     star.textContent = isFavorite(channel.id) ? "⭐" : "☆";
@@ -969,6 +901,7 @@
 
   // ========== KEYBOARD SHORTCUTS ==========
   document.addEventListener("keydown", (e) => {
+    // Only if not typing in input
     if (e.target.tagName === "INPUT") return;
     
     switch(e.key) {
@@ -991,9 +924,7 @@
         refreshStream();
         break;
       case "Escape":
-        if (isFullscreen) {
-          exitIOSFullscreen();
-        } else if (document.fullscreenElement) {
+        if (document.fullscreenElement) {
           document.exitFullscreen();
         }
         break;
@@ -1009,15 +940,6 @@
   fullscreenBtn.addEventListener("click", toggleFullscreen);
   prevBtn.addEventListener("click", playPrevChannel);
   nextBtn.addEventListener("click", playNextChannel);
-
-  // Prevent bounce scrolling on iOS
-  if (isIOS) {
-    document.body.addEventListener('touchmove', (e) => {
-      if (isFullscreen) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-  }
 
   // ========== INITIALIZATION ==========
   function initializePlayer() {
