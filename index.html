@@ -219,6 +219,13 @@
       background: #555;
     }
 
+    /* Channel button wrapper */
+    .channel-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
     button.channel-btn {
       padding: 10px 16px;
       background: #2a2a2a;
@@ -231,6 +238,7 @@
       transition: all 0.2s;
       white-space: nowrap;
       position: relative;
+      min-width: 120px;
     }
 
     button.channel-btn:hover {
@@ -254,6 +262,30 @@
 
     button.channel-btn.hidden {
       display: none;
+    }
+
+    /* Folder selector styling */
+    .folder-selector {
+      padding: 4px 8px;
+      background: #1a1a1a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #888;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .folder-selector:hover {
+      border-color: #666;
+      background: #222;
+    }
+
+    .folder-selector:focus {
+      outline: none;
+      border-color: #e50914;
+      color: #fff;
     }
 
     #player-container {
@@ -342,26 +374,6 @@
       transform: scale(1.2);
     }
 
-    #quality-selector {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.8);
-      padding: 8px;
-      border-radius: 6px;
-      display: none;
-      z-index: 20;
-    }
-
-    #quality-selector select {
-      background: #2a2a2a;
-      color: white;
-      border: 1px solid #444;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
     .toast {
       position: fixed;
       bottom: 20px;
@@ -435,11 +447,20 @@
         text-align: center;
       }
 
+      .channel-wrapper {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 140px;
+      }
+
       button.channel-btn {
         padding: 10px 14px;
         font-size: 13px;
-        flex: 1 1 calc(50% - 4px);
-        min-width: 120px;
+        width: 100%;
+      }
+
+      .folder-selector {
+        font-size: 10px;
+        padding: 3px 6px;
       }
 
       #channels {
@@ -477,11 +498,6 @@
       #channels {
         max-height: 80px;
       }
-    }
-
-    /* Dark mode friendly */
-    @media (prefers-color-scheme: light) {
-      /* Keep dark theme always */
     }
   </style>
 </head>
@@ -573,7 +589,8 @@
     { name: "BTV", id: 380, category: "other" }
   ];
 
-  const folders = ["stream","cast","watch","plus","casting","player"];
+  // All available folders from the streaming service
+  const folders = ["stream","watch", "player","cast","casting","plus","live","play","hd","premium","tv","sport","channel"];
 
   // ========== DOM ELEMENTS ==========
   const loginScreen = document.getElementById("login-screen");
@@ -702,11 +719,12 @@
     errorMsg.style.display = "block";
   }
 
-  // --- Modified: playChannel with folder support ---
-  function playChannel(id, button, channelName) {
+  function playChannel(id, wrapper, channelName) {
     showLoading();
 
     if (currentButton) currentButton.classList.remove("active");
+    
+    const button = wrapper.querySelector('.channel-btn');
     currentButton = button;
     button.classList.add("active");
 
@@ -714,7 +732,7 @@
     currentChannelIndex = visibleChannels.findIndex(ch => ch.id === id);
     currentChannelDiv.textContent = `▶ ${channelName}`;
 
-    const selector = button.querySelector("select");
+    const selector = wrapper.querySelector("select");
     const folder = selector ? selector.value : folders[0];
 
     player.src = getStreamUrl(id, folder);
@@ -743,9 +761,9 @@
     
     currentChannelIndex = (currentChannelIndex + 1) % visibleChannels.length;
     const nextChannel = visibleChannels[currentChannelIndex];
-    const button = document.querySelector(`[data-channel-id="${nextChannel.id}"]`);
-    if (button) {
-      playChannel(nextChannel.id, button, nextChannel.name);
+    const wrapper = document.querySelector(`[data-channel-id="${nextChannel.id}"]`);
+    if (wrapper) {
+      playChannel(nextChannel.id, wrapper, nextChannel.name);
     }
   }
 
@@ -754,9 +772,9 @@
     
     currentChannelIndex = (currentChannelIndex - 1 + visibleChannels.length) % visibleChannels.length;
     const prevChannel = visibleChannels[currentChannelIndex];
-    const button = document.querySelector(`[data-channel-id="${prevChannel.id}"]`);
-    if (button) {
-      playChannel(prevChannel.id, button, prevChannel.name);
+    const wrapper = document.querySelector(`[data-channel-id="${prevChannel.id}"]`);
+    if (wrapper) {
+      playChannel(prevChannel.id, wrapper, prevChannel.name);
     }
   }
 
@@ -794,22 +812,22 @@
     }
   }
 
-  // --- Modified: createChannelButton with folder selector ---
+  // ========== RENDER ==========
   function createChannelButton(channel) {
+    // Create wrapper
+    const wrapper = document.createElement("div");
+    wrapper.className = "channel-wrapper";
+    wrapper.dataset.channelId = channel.id;
+
+    // Create button
     const btn = document.createElement("button");
     btn.className = "channel-btn";
     btn.textContent = channel.name;
-    btn.dataset.channelId = channel.id;
 
+    // Create folder selector
     const selector = document.createElement("select");
-    selector.style.position = "absolute";
-    selector.style.right = "0px";
-    selector.style.bottom = "0px";
-    selector.style.fontSize = "8px";
-    selector.style.background = "#333";
-    selector.style.color = "#fff";
-    selector.style.border = "1px solid #555";
-    selector.style.borderRadius = "4px";
+    selector.className = "folder-selector";
+    selector.title = "Select stream source";
 
     folders.forEach(folder => {
       const option = document.createElement("option");
@@ -818,36 +836,44 @@
       selector.appendChild(option);
     });
 
+    // Load saved preference
     const savedFolder = loadFromLocalStorage(`channel_${channel.id}_folder`) || folders[0];
     selector.value = savedFolder;
 
+    // Handle folder change
     selector.addEventListener("change", (e) => {
+      e.stopPropagation(); // Prevent triggering channel play
       saveToLocalStorage(`channel_${channel.id}_folder`, e.target.value);
+      
+      // If this channel is currently playing, switch immediately
       if (currentChannelId === channel.id) {
         player.src = getStreamUrl(channel.id, e.target.value);
-        showToast(`Player set to: ${e.target.value}`);
+        showToast(`Switched to: ${e.target.value}`, 1500);
       }
     });
 
-    btn.appendChild(selector);
-    btn.onclick = () => playChannel(channel.id, btn, channel.name);
+    // Handle channel click
+    btn.onclick = () => playChannel(channel.id, wrapper, channel.name);
 
-    return btn;
+    // Assemble
+    wrapper.appendChild(btn);
+    wrapper.appendChild(selector);
+
+    return wrapper;
   }
 
-  // ========== RENDER ==========
   function renderChannels() {
     channelsDiv.innerHTML = "";
     
     visibleChannels.forEach(ch => {
-      const btn = createChannelButton(ch);
-      channelsDiv.appendChild(btn);
+      const wrapper = createChannelButton(ch);
+      channelsDiv.appendChild(wrapper);
     });
   }
 
   // ========== KEYBOARD SHORTCUTS ==========
   document.addEventListener("keydown", (e) => {
-    if (e.target.tagName === "INPUT") return;
+    if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
     
     switch(e.key) {
       case "f":
@@ -895,9 +921,9 @@
       ? channels.find(ch => ch.id == lastChannelId) || channels[0]
       : channels[0];
     
-    const defaultButton = document.querySelector(`[data-channel-id="${defaultChannel.id}"]`);
-    if (defaultButton) {
-      playChannel(defaultChannel.id, defaultButton, defaultChannel.name);
+    const defaultWrapper = document.querySelector(`[data-channel-id="${defaultChannel.id}"]`);
+    if (defaultWrapper) {
+      playChannel(defaultChannel.id, defaultWrapper, defaultChannel.name);
     }
   }
 
@@ -909,8 +935,3 @@
 
 </body>
 </html>
-
-
-
-
-
