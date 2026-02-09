@@ -702,23 +702,27 @@
     errorMsg.style.display = "block";
   }
 
+  // --- Modified: playChannel with folder support ---
   function playChannel(id, button, channelName) {
     showLoading();
-    
+
     if (currentButton) currentButton.classList.remove("active");
     currentButton = button;
     button.classList.add("active");
-    
+
     currentChannelId = id;
     currentChannelIndex = visibleChannels.findIndex(ch => ch.id === id);
     currentChannelDiv.textContent = `▶ ${channelName}`;
-    
-    player.src = getStreamUrl(id, folders[0]);
-    
+
+    const selector = button.querySelector("select");
+    const folder = selector ? selector.value : folders[0];
+
+    player.src = getStreamUrl(id, folder);
+
     setTimeout(hideLoading, 3000);
-    
+
     saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
-    showToast(`Now playing: ${channelName}`);
+    showToast(`Now playing: ${channelName} (${folder})`);
   }
 
   function refreshStream() {
@@ -790,30 +794,59 @@
     }
   }
 
+  // --- Modified: createChannelButton with folder selector ---
+  function createChannelButton(channel) {
+    const btn = document.createElement("button");
+    btn.className = "channel-btn";
+    btn.textContent = channel.name;
+    btn.dataset.channelId = channel.id;
+
+    const selector = document.createElement("select");
+    selector.style.position = "absolute";
+    selector.style.right = "6px";
+    selector.style.bottom = "6px";
+    selector.style.fontSize = "10px";
+    selector.style.background = "#333";
+    selector.style.color = "#fff";
+    selector.style.border = "1px solid #555";
+    selector.style.borderRadius = "4px";
+
+    folders.forEach(folder => {
+      const option = document.createElement("option");
+      option.value = folder;
+      option.textContent = folder;
+      selector.appendChild(option);
+    });
+
+    const savedFolder = loadFromLocalStorage(`channel_${channel.id}_folder`) || folders[0];
+    selector.value = savedFolder;
+
+    selector.addEventListener("change", (e) => {
+      saveToLocalStorage(`channel_${channel.id}_folder`, e.target.value);
+      if (currentChannelId === channel.id) {
+        player.src = getStreamUrl(channel.id, e.target.value);
+        showToast(`Player set to: ${e.target.value}`);
+      }
+    });
+
+    btn.appendChild(selector);
+    btn.onclick = () => playChannel(channel.id, btn, channel.name);
+
+    return btn;
+  }
+
   // ========== RENDER ==========
   function renderChannels() {
     channelsDiv.innerHTML = "";
     
-    // Render all visible channels
     visibleChannels.forEach(ch => {
       const btn = createChannelButton(ch);
       channelsDiv.appendChild(btn);
     });
   }
 
-  function createChannelButton(channel) {
-    const btn = document.createElement("button");
-    btn.className = "channel-btn";
-    btn.textContent = channel.name;
-    btn.dataset.channelId = channel.id;
-    btn.onclick = () => playChannel(channel.id, btn, channel.name);
-    
-    return btn;
-  }
-
   // ========== KEYBOARD SHORTCUTS ==========
   document.addEventListener("keydown", (e) => {
-    // Only if not typing in input
     if (e.target.tagName === "INPUT") return;
     
     switch(e.key) {
