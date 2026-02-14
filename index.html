@@ -245,6 +245,14 @@
       box-shadow: 0 0 15px rgba(181, 255, 0, 0.4);
     }
 
+    .match-card.upcoming {
+      opacity: 0.85;
+    }
+
+    .match-card.upcoming:hover {
+      opacity: 1;
+    }
+
     .match-header {
       display: flex;
       justify-content: space-between;
@@ -719,7 +727,7 @@
       <div class="section-header">
         <div class="section-title">
           <span class="live-indicator"></span>
-          LIVE FOOTBALL MATCHES
+          POPULAR FOOTBALL MATCHES
         </div>
         <button id="refresh-matches-btn" class="btn" style="padding: 4px 8px; font-size: 10px;">
           🔄
@@ -728,7 +736,7 @@
       <div id="live-matches">
         <div class="loading-matches">
           <div class="spinner" style="width: 40px; height: 40px; margin: 10px auto;"></div>
-          Loading live matches...
+          Loading matches...
         </div>
       </div>
     </div>
@@ -999,6 +1007,55 @@ const utils = {
       ];
       return POPULAR_LEAGUES;
     }
+  },
+
+  formatLisbonTime(timestamp) {
+    try {
+      const date = new Date(timestamp * 1000); // Convert Unix timestamp to milliseconds
+      
+      // Format to Lisbon timezone (Europe/Lisbon)
+      const options = {
+        timeZone: 'Europe/Lisbon',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      };
+      
+      return date.toLocaleTimeString('en-GB', options);
+    } catch (error) {
+      console.error('Error formatting time:', error);
+      return '--:--';
+    }
+  },
+
+  formatMatchDate(timestamp) {
+    try {
+      const date = new Date(timestamp * 1000);
+      const now = new Date();
+      
+      // Check if match is today
+      const isToday = date.toDateString() === now.toDateString();
+      
+      // Check if match is tomorrow
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const isTomorrow = date.toDateString() === tomorrow.toDateString();
+      
+      if (isToday) return 'Today';
+      if (isTomorrow) return 'Tomorrow';
+      
+      // Otherwise show the date
+      const options = {
+        timeZone: 'Europe/Lisbon',
+        month: 'short',
+        day: 'numeric'
+      };
+      
+      return date.toLocaleDateString('en-GB', options);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
   }
 };
 
@@ -1177,8 +1234,8 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching popular live football matches...');
-      // Use the popular/live endpoint which filters for top leagues and teams
+      console.log('🔄 Fetching popular football matches...');
+      // Fetch all popular matches (not just live) to show upcoming games too
       const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular`);
       
       if (!response.ok) {
@@ -1188,20 +1245,17 @@ const liveMatches = {
       const data = await response.json();
       console.log('✅ Received popular matches:', data.length);
       
-      // Filter for only live matches
-      const liveMatches = data.filter(match => {
-        const status = match.status?.toLowerCase() || '';
-        return status === 'in' || status === 'live' || match.currentMinute;
-      });
+      // Sort matches by timestamp (earliest first)
+      const sortedMatches = data.sort((a, b) => a.timestamp - b.timestamp);
       
-      console.log('🎯 Filtered to live matches:', liveMatches.length);
+      console.log('🎯 Showing popular matches sorted by time:', sortedMatches.length);
       
-      state.liveMatches = liveMatches;
+      state.liveMatches = sortedMatches;
       this.render();
       
-      return liveMatches;
+      return sortedMatches;
     } catch (error) {
-      console.error('❌ Error fetching live matches:', error);
+      console.error('❌ Error fetching matches:', error);
       this.renderError();
       return [];
     }
@@ -1212,12 +1266,40 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    const statusText = match.currentMinute || 'LIVE';
+    // Determine match status and display
+    const status = match.status?.toLowerCase() || '';
+    const isLive = status === 'in' || status === 'live' || match.currentMinute;
+    
+    // Add upcoming class if not live
+    if (!isLive) {
+      card.classList.add('upcoming');
+    }
+    
+    let statusDisplay = '';
+    if (isLive) {
+      const minute = match.currentMinute || 'LIVE';
+      statusDisplay = `
+        <div class="match-status">
+          <span class="live-indicator"></span>
+          ${minute}
+        </div>
+      `;
+    } else {
+      // Show match time in Lisbon timezone
+      const matchTime = utils.formatLisbonTime(match.timestamp);
+      const matchDate = utils.formatMatchDate(match.timestamp);
+      statusDisplay = `
+        <div class="match-status" style="color: var(--text-secondary);">
+          ${matchDate} ${matchTime}
+        </div>
+      `;
+    }
+    
     const streamsCount = match.streams ? match.streams.length : 0;
     
     // Create streams HTML
     let streamsHTML = '';
-    if (match.streams && match.streams.length > 0) {
+    if (match.streams && match.streams.length > 0 && isLive) {
       streamsHTML = '<div class="match-streams">';
       match.streams.forEach((stream, index) => {
         const quality = stream.quality || 'HD';
@@ -1229,15 +1311,14 @@ const liveMatches = {
         `;
       });
       streamsHTML += '</div>';
+    } else if (!isLive) {
+      streamsHTML = '<div class="match-streams" style="font-size: 10px; color: var(--text-secondary); text-align: center; padding: 4px;">Not started yet</div>';
     }
     
     card.innerHTML = `
       <div class="match-header">
         <div class="match-league">${match.league}</div>
-        <div class="match-status">
-          <span class="live-indicator"></span>
-          ${statusText}
-        </div>
+        ${statusDisplay}
       </div>
       <div class="match-teams">
         <div class="match-team">
@@ -1252,8 +1333,8 @@ const liveMatches = {
       ${streamsHTML}
     `;
     
-    // Add click handlers for stream buttons
-    if (match.streams && match.streams.length > 0) {
+    // Add click handlers for stream buttons (only for live matches)
+    if (match.streams && match.streams.length > 0 && isLive) {
       const streamBtns = card.querySelectorAll('.stream-btn');
       streamBtns.forEach((btn, index) => {
         btn.addEventListener('click', (e) => {
@@ -1278,7 +1359,7 @@ const liveMatches = {
     if (state.liveMatches.length === 0) {
       elements.liveMatchesDiv.innerHTML = `
         <div class="no-matches">
-          ⚽ No live matches from popular leagues at the moment
+          ⚽ No popular matches available at the moment
         </div>
       `;
       return;
@@ -1289,7 +1370,7 @@ const liveMatches = {
       elements.liveMatchesDiv.appendChild(card);
     });
     
-    console.log('✅ Rendered', state.liveMatches.length, 'live match cards');
+    console.log('✅ Rendered', state.liveMatches.length, 'match cards');
   },
 
   renderError() {
