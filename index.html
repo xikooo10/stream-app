@@ -989,8 +989,7 @@ const state = {
   currentMatchCard: null,
   liveMatchesRefreshTimer: null,
   currentMatch: null,
-  currentStreamIndex: 0,
-  minuteUpdateTimer: null // Timer for updating match minutes
+  currentStreamIndex: 0
 };
 
 const utils = {
@@ -1415,18 +1414,30 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    // Calculate current minute
-    const currentMinute = this.calculateMatchMinute(match);
+    // Always show LIVE badge (no minutes)
     const homeScore = match.scores?.home ?? 0;
     const awayScore = match.scores?.away ?? 0;
     
-    // Time badge with data attribute for updates
-    const timeBadge = `<div class="match-time-badge" data-match-id="${match.matchId}">${currentMinute}'</div>`;
+    // Simple LIVE badge
+    const timeBadge = `<div class="match-time-badge">LIVE</div>`;
     
-    // Filter streams to only show HD quality (exclude SD)
+    // Filter streams: HD quality and only English/Portuguese languages
     const hdStreams = match.streams ? match.streams.filter(stream => {
       const quality = (stream.quality || '').toLowerCase();
-      return quality !== 'sd' && quality !== 'low';
+      const language = (stream.language || '').toLowerCase();
+      
+      // Check if HD quality (not SD or low)
+      const isHD = quality !== 'sd' && quality !== 'low';
+      
+      // Check if English or Portuguese
+      const isEnglishOrPortuguese = 
+        language.includes('en') || 
+        language.includes('english') || 
+        language.includes('pt') || 
+        language.includes('portuguese') ||
+        language.includes('por');
+      
+      return isHD && isEnglishOrPortuguese;
     }) : [];
     
     // Create streams selector (dropdown style like channels)
@@ -1444,7 +1455,7 @@ const liveMatches = {
         </select>
       `;
     } else {
-      streamsHTML = '<div class="no-streams-msg">No HD streams</div>';
+      streamsHTML = '<div class="no-streams-msg">No streams available</div>';
     }
     
     card.innerHTML = `
@@ -1490,62 +1501,6 @@ const liveMatches = {
     }
     
     return card;
-  },
-
-  calculateMatchMinute(match) {
-    // If API provides current minute, use it
-    if (match.currentMinute && match.currentMinute !== 'LIVE') {
-      return match.currentMinute;
-    }
-    
-    // Otherwise calculate based on elapsed time
-    if (match.fetchedAt && match.timestamp) {
-      const matchStartTime = match.timestamp * 1000; // Convert to milliseconds
-      const now = Date.now();
-      const elapsedMs = now - matchStartTime;
-      const elapsedMinutes = Math.floor(elapsedMs / 60000);
-      
-      // Cap at reasonable values (90 minutes + injury time)
-      if (elapsedMinutes < 0) return 'LIVE';
-      if (elapsedMinutes > 120) return '90+';
-      if (elapsedMinutes > 90) return `90+${elapsedMinutes - 90}`;
-      return elapsedMinutes.toString();
-    }
-    
-    return 'LIVE';
-  },
-
-  updateMatchMinutes() {
-    // Update all visible match time badges
-    state.liveMatches.forEach(match => {
-      const badge = document.querySelector(`.match-time-badge[data-match-id="${match.matchId}"]`);
-      if (badge) {
-        const currentMinute = this.calculateMatchMinute(match);
-        badge.textContent = `${currentMinute}'`;
-      }
-    });
-  },
-
-  startMinuteUpdater() {
-    // Clear existing timer if any
-    if (state.minuteUpdateTimer) {
-      clearInterval(state.minuteUpdateTimer);
-    }
-    
-    // Update minutes every 60 seconds
-    state.minuteUpdateTimer = setInterval(() => {
-      this.updateMatchMinutes();
-    }, 60000);
-    
-    console.log('✅ Minute updater enabled (every 60s)');
-  },
-
-  stopMinuteUpdater() {
-    if (state.minuteUpdateTimer) {
-      clearInterval(state.minuteUpdateTimer);
-      state.minuteUpdateTimer = null;
-      console.log('⏹️ Minute updater stopped');
-    }
   },
 
   render() {
@@ -1807,9 +1762,6 @@ async function init() {
   // Start auto-refresh for live matches
   liveMatches.startAutoRefresh();
   
-  // Start minute updater for live match times
-  liveMatches.startMinuteUpdater();
-  
   const lastChannelId = utils.loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
   const defaultChannel = lastChannelId 
     ? channels.find(ch => ch.id == lastChannelId) || channels[0]
@@ -1861,7 +1813,6 @@ async function init() {
   // Clean up on page unload
   window.addEventListener('beforeunload', () => {
     liveMatches.stopAutoRefresh();
-    liveMatches.stopMinuteUpdater();
   });
 
   console.log('✅ App initialized');
