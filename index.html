@@ -939,7 +939,7 @@ const CONFIG = {
   LOADING_TIMEOUT: 3000,
   RECONNECT_MAX_ATTEMPTS: 3,
   RECONNECT_DELAY: 5000,
-  LIVE_MATCHES_REFRESH_INTERVAL: 60000 // Refresh every 60 seconds
+  LIVE_MATCHES_REFRESH_INTERVAL: 30000 // Refresh every 30 seconds
 };
 
 // We'll fetch popular leagues from the API instead of hardcoding
@@ -992,7 +992,8 @@ const state = {
   currentMatchCard: null,
   liveMatchesRefreshTimer: null,
   currentMatch: null,
-  currentStreamIndex: 0
+  currentStreamIndex: 0,
+  minuteUpdateTimer: null // Timer for updating match minutes
 };
 
 const utils = {
@@ -1316,14 +1317,30 @@ const liveMatches = {
       }
       
       const data = await response.json();
-      console.log('✅ Received live popular matches:', data.length);
+      const currentTime = new Date();
+      console.log('✅ Received live popular matches:', data.length, 'at', currentTime.toLocaleTimeString());
       
       if (data.length > 0) {
         console.log('Sample match:', data[0]);
       }
       
+      // Preserve existing match data to maintain start times
+      const existingMatches = new Map(state.liveMatches.map(m => [m.matchId, m]));
+      
+      // Process new matches and preserve start times
+      const processedMatches = data.map(match => {
+        const existing = existingMatches.get(match.matchId);
+        if (existing && existing.fetchedAt) {
+          // Keep the original fetch time for accurate minute calculation
+          return { ...match, fetchedAt: existing.fetchedAt };
+        } else {
+          // New match - record when we first saw it
+          return { ...match, fetchedAt: Date.now() };
+        }
+      });
+      
       // Sort by league name for better organization
-      const sortedMatches = data.sort((a, b) => {
+      const sortedMatches = processedMatches.sort((a, b) => {
         // First sort by league
         if (a.league < b.league) return -1;
         if (a.league > b.league) return 1;
@@ -1355,13 +1372,13 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    // Get match status
-    const currentMinute = match.currentMinute || 'LIVE';
+    // Calculate current minute
+    const currentMinute = this.calculateMatchMinute(match);
     const homeScore = match.scores?.home ?? 0;
     const awayScore = match.scores?.away ?? 0;
     
-    // Time badge - always show as live since we only fetch live matches
-    const timeBadge = `<div class="match-time-badge">${currentMinute}'</div>`;
+    // Time badge with data attribute for updates
+    const timeBadge = `<div class="match-time-badge" data-match-id="${match.matchId}">${currentMinute}'</div>`;
     
     // Filter streams to only show HD quality (exclude SD)
     const hdStreams = match.streams ? match.streams.filter(stream => {
@@ -1430,6 +1447,62 @@ const liveMatches = {
     }
     
     return card;
+  },
+
+  calculateMatchMinute(match) {
+    // If API provides current minute, use it
+    if (match.currentMinute && match.currentMinute !== 'LIVE') {
+      return match.currentMinute;
+    }
+    
+    // Otherwise calculate based on elapsed time
+    if (match.fetchedAt && match.timestamp) {
+      const matchStartTime = match.timestamp * 1000; // Convert to milliseconds
+      const now = Date.now();
+      const elapsedMs = now - matchStartTime;
+      const elapsedMinutes = Math.floor(elapsedMs / 60000);
+      
+      // Cap at reasonable values (90 minutes + injury time)
+      if (elapsedMinutes < 0) return 'LIVE';
+      if (elapsedMinutes > 120) return '90+';
+      if (elapsedMinutes > 90) return `90+${elapsedMinutes - 90}`;
+      return elapsedMinutes.toString();
+    }
+    
+    return 'LIVE';
+  },
+
+  updateMatchMinutes() {
+    // Update all visible match time badges
+    state.liveMatches.forEach(match => {
+      const badge = document.querySelector(`.match-time-badge[data-match-id="${match.matchId}"]`);
+      if (badge) {
+        const currentMinute = this.calculateMatchMinute(match);
+        badge.textContent = `${currentMinute}'`;
+      }
+    });
+  },
+
+  startMinuteUpdater() {
+    // Clear existing timer if any
+    if (state.minuteUpdateTimer) {
+      clearInterval(state.minuteUpdateTimer);
+    }
+    
+    // Update minutes every 60 seconds
+    state.minuteUpdateTimer = setInterval(() => {
+      this.updateMatchMinutes();
+    }, 60000);
+    
+    console.log('✅ Minute updater enabled (every 60s)');
+  },
+
+  stopMinuteUpdater() {
+    if (state.minuteUpdateTimer) {
+      clearInterval(state.minuteUpdateTimer);
+      state.minuteUpdateTimer = null;
+      console.log('⏹️ Minute updater stopped');
+    }
   },
 
   render() {
@@ -1512,7 +1585,7 @@ const liveMatches = {
       this.fetchLiveMatches();
     }, CONFIG.LIVE_MATCHES_REFRESH_INTERVAL);
     
-    console.log('✅ Auto-refresh enabled (every 60s)');
+    console.log('✅ Auto-refresh enabled (every 30s)');
   },
 
   stopAutoRefresh() {
@@ -1673,6 +1746,9 @@ async function init() {
   // Start auto-refresh for live matches
   liveMatches.startAutoRefresh();
   
+  // Start minute updater for live match times
+  liveMatches.startMinuteUpdater();
+  
   const lastChannelId = utils.loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
   const defaultChannel = lastChannelId 
     ? channels.find(ch => ch.id == lastChannelId) || channels[0]
@@ -1721,6 +1797,7 @@ async function init() {
   // Clean up on page unload
   window.addEventListener('beforeunload', () => {
     liveMatches.stopAutoRefresh();
+    liveMatches.stopMinuteUpdater();
   });
 
   console.log('✅ App initialized');
