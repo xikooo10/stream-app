@@ -6,15 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000">
   <meta name="description" content="QuickPick premium sports streaming platform">
-  <!--
-    IMPORTANT: You need to add your dlhd.link API key!
-    
-    Find this line in the JavaScript code (around line 1050):
-    DLHD_API_KEY: 'YOUR_API_KEY_HERE',
-    
-    Replace 'YOUR_API_KEY_HERE' with your actual API key from dlhd.link
-    Contact dlhd.link support to get your API key if you don't have one.
-  -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preload" as="image" href="logo__1_.png">
   <link rel="manifest" href="manifest.json">
@@ -913,14 +904,16 @@
 const CONFIG = {
   LAST_CHANNEL_KEY: 'lastChannel',
   STREAM_BASE_URL: 'https://dlhd.link',
-  DLHD_API_KEY: 'YOUR_API_KEY_HERE', // Replace with your actual API key
-  DLHD_API_URL: 'https://dlhd.link/daddyapi.php',
+  WATCHFOOTY_API_BASE: 'https://api.watchfooty.st/api/v1',
   DEBOUNCE_DELAY: 300,
   LOADING_TIMEOUT: 3000,
   RECONNECT_MAX_ATTEMPTS: 3,
   RECONNECT_DELAY: 5000,
   LIVE_MATCHES_REFRESH_INTERVAL: 60000 // Refresh every 60 seconds
 };
+
+// We'll fetch popular leagues from the API instead of hardcoding
+let POPULAR_LEAGUES = [];
 
 const channels = [
   { name: "SPORT TV1", id: 49, category: "sport" },
@@ -1018,6 +1011,44 @@ const utils = {
       leagueName.toLowerCase().includes(popularLeague.toLowerCase()) ||
       popularLeague.toLowerCase().includes(leagueName.toLowerCase())
     );
+  },
+
+  async fetchPopularLeagues() {
+    try {
+      console.log('🔄 Fetching popular football leagues...');
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/top-leagues/football`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Received popular leagues:', data.length);
+      
+      POPULAR_LEAGUES = data;
+      return data;
+    } catch (error) {
+      console.error('❌ Error fetching popular leagues:', error);
+      // Fallback to the 6 major European leagues if API fails
+      POPULAR_LEAGUES = [
+        'Premier League',
+        'English Premier League',
+        'La Liga',
+        'Spanish La Liga',
+        'Serie A',
+        'Italian Serie A',
+        'Bundesliga',
+        'German Bundesliga',
+        'Ligue 1',
+        'French Ligue 1',
+        'Primeira Liga',
+        'Portuguese Primeira Liga',
+        'Liga Portugal',
+        'UEFA Champions League',
+        'UEFA Europa League'
+      ];
+      return POPULAR_LEAGUES;
+    }
   },
 
   formatLisbonTime(timestamp) {
@@ -1147,6 +1178,43 @@ const player = {
     utils.showToast(`⚡ Now playing: ${channelName}`);
   },
 
+  playMatch(match, streamIndex = 0) {
+    this.showLoading();
+    reconnect.reset();
+
+    if (state.currentButton) {
+      state.currentButton.classList.remove("active");
+    }
+
+    if (state.currentMatchCard) {
+      state.currentMatchCard.classList.remove("active");
+    }
+
+    const matchCard = document.querySelector(`[data-match-id="${match.matchId}"]`);
+    if (matchCard) {
+      state.currentMatchCard = matchCard;
+      matchCard.classList.add("active");
+    }
+
+    state.currentChannelId = null;
+    state.currentMatch = match;
+    state.currentStreamIndex = streamIndex;
+    
+    const matchTitle = `${match.teams.home.name} vs ${match.teams.away.name}`;
+    const stream = match.streams[streamIndex];
+    const streamInfo = stream ? ` (${stream.quality || 'HD'} - ${stream.language || 'EN'})` : '';
+    elements.currentChannelDiv.textContent = `⚽ ${matchTitle}${streamInfo}`;
+
+    // Use the selected stream
+    if (match.streams && match.streams.length > streamIndex) {
+      elements.player.src = stream.url;
+      utils.showToast(`⚽ Now watching: ${matchTitle}${streamInfo}`);
+    } else {
+      this.showError();
+      utils.showToast("Stream not available");
+    }
+  },
+
   refresh() {
     if (state.currentChannelId) {
       this.showLoading();
@@ -1208,38 +1276,43 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching live matches from dlhd.link...');
+      console.log('🔄 Fetching live popular football matches...');
       
-      // Fetch schedule from dlhd.link API
-      const response = await fetch(`${CONFIG.DLHD_API_URL}?key=${CONFIG.DLHD_API_KEY}&endpoint=schedule`);
+      // Use the popular/live endpoint to get only live popular matches
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular/live`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('✅ Received live popular matches:', data.length);
       
-      if (!data.success) {
-        throw new Error(data.message || 'API returned error');
+      if (data.length > 0) {
+        console.log('Sample match:', data[0]);
       }
       
-      console.log('✅ Received schedule data');
+      // Sort by league name for better organization
+      const sortedMatches = data.sort((a, b) => {
+        // First sort by league
+        if (a.league < b.league) return -1;
+        if (a.league > b.league) return 1;
+        // Then by timestamp
+        return a.timestamp - b.timestamp;
+      });
       
-      // Extract live football matches from schedule
-      const liveFootballMatches = this.extractLiveFootballMatches(data.data);
-      
-      console.log('🎯 Found live football matches:', liveFootballMatches.length);
+      console.log('🎯 Showing live popular matches:', sortedMatches.length);
       
       // Update live count in UI
       const liveCountSpan = document.querySelector('.live-count');
       if (liveCountSpan) {
-        liveCountSpan.textContent = `Live (${liveFootballMatches.length})`;
+        liveCountSpan.textContent = `Live (${sortedMatches.length})`;
       }
       
-      state.liveMatches = liveFootballMatches;
+      state.liveMatches = sortedMatches;
       this.render();
       
-      return liveFootballMatches;
+      return sortedMatches;
     } catch (error) {
       console.error('❌ Error fetching matches:', error);
       this.renderError();
@@ -1247,166 +1320,86 @@ const liveMatches = {
     }
   },
 
-  extractLiveFootballMatches(scheduleData) {
-    const matches = [];
-    const now = new Date();
-    const currentTime = now.getHours() * 60 + now.getMinutes(); // Current time in minutes
-    
-    // Get today's day name
-    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const today = daysOfWeek[now.getDay()];
-    
-    // Check if we have today's schedule
-    if (!scheduleData[today]) {
-      console.log('No schedule data for today:', today);
-      return matches;
-    }
-    
-    const todaySchedule = scheduleData[today];
-    
-    // Look for Football category
-    if (todaySchedule['Football']) {
-      todaySchedule['Football'].forEach(event => {
-        // Parse event time (format: "HH:MM")
-        const timeParts = event.time.split(':');
-        const eventTimeMinutes = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
-        
-        // Consider a match "live" if it started in the last 2 hours and hasn't ended yet
-        // Football matches typically last ~2 hours
-        const timeDiff = currentTime - eventTimeMinutes;
-        const isLive = timeDiff >= 0 && timeDiff <= 120; // 0 to 120 minutes after start
-        
-        if (isLive && event.channels && event.channels.length > 0) {
-          matches.push({
-            event: event.event,
-            time: event.time,
-            channels: event.channels,
-            category: 'Football'
-          });
-        }
-      });
-    }
-    
-    return matches;
-  },
-
   createMatchCard(match) {
     const card = document.createElement('div');
     card.className = 'match-card';
-    card.dataset.matchEvent = match.event;
+    card.dataset.matchId = match.matchId;
     
-    // Calculate approximate current minute (assume match started at scheduled time)
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const matchTimeParts = match.time.split(':');
-    const matchStartMinutes = parseInt(matchTimeParts[0]) * 60 + parseInt(matchTimeParts[1]);
-    const minutesElapsed = currentMinutes - matchStartMinutes;
-    const displayMinute = minutesElapsed > 0 && minutesElapsed <= 90 ? minutesElapsed : 'LIVE';
+    // Get match status
+    const currentMinute = match.currentMinute || 'LIVE';
+    const homeScore = match.scores?.home ?? 0;
+    const awayScore = match.scores?.away ?? 0;
     
-    // Time badge
-    const timeBadge = `<div class="match-time-badge">${displayMinute}'</div>`;
+    // Time badge - always show as live since we only fetch live matches
+    const timeBadge = `<div class="match-time-badge">${currentMinute}'</div>`;
     
-    // Parse team names from event (format: "Team A vs Team B" or similar)
-    const eventParts = match.event.split(' vs ');
-    let homeTeam = 'Home';
-    let awayTeam = 'Away';
+    // Filter streams to only show HD quality (exclude SD)
+    const hdStreams = match.streams ? match.streams.filter(stream => {
+      const quality = (stream.quality || '').toLowerCase();
+      return quality !== 'sd' && quality !== 'low';
+    }) : [];
     
-    if (eventParts.length === 2) {
-      homeTeam = eventParts[0].trim();
-      awayTeam = eventParts[1].trim();
-    } else {
-      // If not in "vs" format, show the full event name
-      homeTeam = match.event;
-      awayTeam = '';
-    }
-    
-    // Create channel selector (like folder selector)
-    let channelsHTML = '';
-    if (match.channels && match.channels.length > 0) {
-      channelsHTML = `
-        <select class="stream-selector" data-match-event="${match.event}" aria-label="Select channel">
-          ${match.channels.map((channel, index) => {
-            return `<option value="${index}">${channel.channel_name}</option>`;
+    // Create streams selector (dropdown style like channels)
+    let streamsHTML = '';
+    if (hdStreams.length > 0) {
+      streamsHTML = `
+        <select class="stream-selector" data-match-id="${match.matchId}" aria-label="Select stream quality">
+          ${hdStreams.map((stream, index) => {
+            const quality = stream.quality || 'HD';
+            const language = stream.language || 'EN';
+            // Find the original index in the full streams array
+            const originalIndex = match.streams.indexOf(stream);
+            return `<option value="${originalIndex}">${quality} - ${language}</option>`;
           }).join('')}
         </select>
       `;
     } else {
-      channelsHTML = '<div class="no-streams-msg">No channels</div>';
+      streamsHTML = '<div class="no-streams-msg">No HD streams</div>';
     }
     
     card.innerHTML = `
       ${timeBadge}
       <div class="match-header">
-        <div class="match-league">${match.category}</div>
+        <div class="match-league">${match.league}</div>
       </div>
       <div class="match-teams">
         <div class="match-team">
-          <span class="team-name">${homeTeam}</span>
-          <span class="team-score">-</span>
+          <span class="team-name">${match.teams.home.name}</span>
+          <span class="team-score">${homeScore}</span>
         </div>
-        ${awayTeam ? `
         <div class="match-team">
-          <span class="team-name">${awayTeam}</span>
-          <span class="team-score">-</span>
+          <span class="team-name">${match.teams.away.name}</span>
+          <span class="team-score">${awayScore}</span>
         </div>
-        ` : ''}
       </div>
       <div class="match-stream-selector">
-        ${channelsHTML}
+        ${streamsHTML}
       </div>
     `;
     
-    // Add click handler for the entire card
-    if (match.channels && match.channels.length > 0) {
+    // Add click handler for the entire card (plays first HD stream)
+    if (hdStreams.length > 0) {
       card.addEventListener('click', (e) => {
         // Don't trigger if clicking the select dropdown
         if (e.target.classList.contains('stream-selector')) return;
         
         const selector = card.querySelector('.stream-selector');
-        const channelIndex = selector ? parseInt(selector.value) : 0;
-        const channel = match.channels[channelIndex];
-        this.playChannel(channel, card);
+        const streamIndex = selector ? parseInt(selector.value) : match.streams.indexOf(hdStreams[0]);
+        player.playMatch(match, streamIndex);
       });
       
-      // Add change handler for channel selector
+      // Add change handler for stream selector
       const selector = card.querySelector('.stream-selector');
       if (selector) {
         selector.addEventListener('change', (e) => {
           e.stopPropagation();
-          const channelIndex = parseInt(e.target.value);
-          const channel = match.channels[channelIndex];
-          this.playChannel(channel, card);
+          const streamIndex = parseInt(e.target.value);
+          player.playMatch(match, streamIndex);
         });
       }
     }
     
     return card;
-  },
-
-  playChannel(channel, matchCard) {
-    player.showLoading();
-    reconnect.reset();
-
-    // Remove active state from all cards and buttons
-    if (state.currentButton) {
-      state.currentButton.classList.remove("active");
-    }
-    if (state.currentMatchCard) {
-      state.currentMatchCard.classList.remove("active");
-    }
-
-    // Set this card as active
-    state.currentMatchCard = matchCard;
-    matchCard.classList.add("active");
-
-    state.currentChannelId = null;
-    
-    elements.currentChannelDiv.textContent = `⚽ ${channel.channel_name}`;
-
-    // Use the default folder (stream) for live matches
-    elements.player.src = utils.getStreamUrl(channel.channel_id, 'stream');
-    
-    utils.showToast(`⚽ Now watching: ${channel.channel_name}`);
   },
 
   render() {
@@ -1446,12 +1439,15 @@ const liveMatches = {
       return;
     }
     
-    // Filter matches by event name (team names) or channel names
+    // Filter matches by team name or league
     const filtered = state.liveMatches.filter(match => {
-      const event = match.event.toLowerCase();
-      const channelNames = match.channels.map(ch => ch.channel_name.toLowerCase()).join(' ');
+      const homeTeam = match.teams.home.name.toLowerCase();
+      const awayTeam = match.teams.away.name.toLowerCase();
+      const league = match.league.toLowerCase();
       
-      return event.includes(term) || channelNames.includes(term);
+      return homeTeam.includes(term) || 
+             awayTeam.includes(term) || 
+             league.includes(term);
     });
     
     // Render filtered matches
@@ -1638,7 +1634,10 @@ async function init() {
   
   channelManager.render();
   
-  // Fetch live matches from dlhd.link
+  // Fetch popular leagues first (optional, for fallback filtering)
+  await utils.fetchPopularLeagues();
+  
+  // Fetch popular live matches
   await liveMatches.fetchLiveMatches();
   
   // Start auto-refresh for live matches
