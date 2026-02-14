@@ -5,151 +5,44 @@
   <title>QuickPick Stream</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000">
+  <meta name="description" content="QuickPick premium sports streaming platform">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preload" as="image" href="logo__1_.png">
+  <link rel="manifest" href="manifest.json">
   
   <style>
-    * { box-sizing: border-box; }
+    * { 
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      --bg-primary: #000000;
+      --bg-secondary: #0f0f0f;
+      --bg-tertiary: #1a1a1a;
+      --text-primary: #ffffff;
+      --text-secondary: #666666;
+      --accent-primary: #b5ff00;
+      --accent-secondary: #8fcc00;
+      --error-color: #ff4444;
+      --border-color: #1a1a1a;
+      --live-indicator: #ff0000;
+    }
     
     body {
-      margin: 0;
-      background: #000000 url('X_pick.png') center center;
+      background: var(--bg-primary) url('X_pick.png') center center no-repeat fixed;
       background-size: cover;
-      background-attachment: fixed;
-      color: #ffffff;
+      color: var(--text-primary);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
       overflow-x: hidden;
-    }
-
-    /* Login Screen */
-    #login-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(5px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    #login-screen.hidden {
-      display: none;
-    }
-
-    .login-box {
-      background: #0a0a0a;
-      padding: 50px 40px;
-      border-radius: 16px;
-      border: 2px solid #1a1a1a;
-      box-shadow: 0 0 60px rgba(181, 255, 0, 0.15);
-      text-align: center;
-      max-width: 440px;
-      width: 90%;
-    }
-
-    .login-logo {
-      max-width: 200px;
-      height: auto;
-      margin-bottom: 32px;
-      filter: drop-shadow(0 0 20px rgba(181, 255, 0, 0.4));
-      border-radius: 50%;
-    }
-
-    .login-box h1 {
-      margin: 0 0 8px 0;
-      font-size: 32px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #ffffff 0%, #b5ff00 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .login-box .subtitle {
-      color: #666;
-      margin-bottom: 32px;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .login-box input {
-      width: 100%;
-      padding: 16px 20px;
-      background: #0f0f0f;
-      border: 2px solid #1a1a1a;
-      border-radius: 10px;
-      color: white;
-      font-size: 16px;
-      margin-bottom: 20px;
-      transition: all 0.3s;
-    }
-
-    .login-box input:focus {
-      outline: none;
-      border-color: #b5ff00;
-      background: #141414;
-      box-shadow: 0 0 20px rgba(181, 255, 0, 0.1);
-    }
-
-    .login-box button {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #b5ff00 0%, #8fcc00 100%);
-      color: #000000;
-      border: none;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 20px rgba(181, 255, 0, 0.3);
-    }
-
-    .login-box button:hover {
-      background: linear-gradient(135deg, #c9ff33 0%, #b5ff00 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(181, 255, 0, 0.4);
-    }
-
-    .login-box button:active {
-      transform: translateY(0);
-    }
-
-    .error-message {
-      color: #ff4444;
-      margin-top: 16px;
-      font-size: 14px;
-      display: none;
-      font-weight: 500;
-    }
-
-    .error-message.show {
-      display: block;
-      animation: shake 0.4s;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
-    }
-
-    /* Main App */
-    #app {
-      display: none;
-    }
-
-    #app.visible {
-      display: block;
+      line-height: 1.5;
     }
 
     #header {
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(10px);
-      border-bottom: 2px solid #1a1a1a;
+      border-bottom: 2px solid var(--border-color);
       padding: 16px 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.8);
       position: sticky;
@@ -162,6 +55,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 16px;
+      gap: 16px;
     }
 
     .header-logo {
@@ -175,12 +69,13 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     #current-channel {
       font-size: 18px;
       font-weight: 700;
-      color: #b5ff00;
+      color: var(--accent-primary);
       text-shadow: 0 0 10px rgba(181, 255, 0, 0.4);
       display: flex;
       align-items: center;
@@ -189,10 +84,10 @@
 
     #search-box {
       padding: 10px 16px;
-      background: #0f0f0f;
-      border: 2px solid #1a1a1a;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
-      color: white;
+      color: var(--text-primary);
       font-size: 14px;
       width: 200px;
       transition: all 0.3s;
@@ -200,49 +95,238 @@
 
     #search-box:focus {
       outline: none;
-      border-color: #b5ff00;
+      border-color: var(--accent-primary);
       width: 260px;
       box-shadow: 0 0 15px rgba(181, 255, 0, 0.15);
     }
 
-    #fullscreen-btn,
-    #refresh-btn,
-    #logout-btn {
+    .btn {
       padding: 10px 18px;
-      background: #0f0f0f;
-      color: #fff;
-      border: 2px solid #1a1a1a;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       font-weight: 600;
       white-space: nowrap;
       transition: all 0.3s;
+      font-family: inherit;
     }
 
-    #fullscreen-btn:hover,
-    #refresh-btn:hover {
-      background: #1a1a1a;
-      border-color: #b5ff00;
-      color: #b5ff00;
+    .btn:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
       box-shadow: 0 0 15px rgba(181, 255, 0, 0.2);
     }
 
+    .btn:active {
+      transform: scale(0.98);
+    }
+
     #logout-btn:hover {
-      background: #1a1a1a;
-      border-color: #ff4444;
-      color: #ff4444;
+      border-color: var(--error-color);
+      color: var(--error-color);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 6px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+    }
+
+    .filter-tab:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .filter-tab.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: #000;
+      border-color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* Live Matches Section */
+    #live-matches-section {
+      background: rgba(15, 15, 15, 0.9);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--live-indicator);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    #live-matches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-primary) var(--bg-secondary);
+    }
+
+    #live-matches::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    #live-matches::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 5px;
+    }
+
+    #live-matches::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      border-radius: 5px;
+    }
+
+    .match-card {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .match-card:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(181, 255, 0, 0.3);
+    }
+
+    .match-card.active {
+      background: linear-gradient(135deg, rgba(181, 255, 0, 0.15) 0%, rgba(143, 204, 0, 0.15) 100%);
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .match-league {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .match-status {
+      font-size: 11px;
+      color: var(--accent-primary);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .match-teams {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .match-team {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .team-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .team-score {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-primary);
+      margin-left: 8px;
+    }
+
+    .match-streams-count {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .no-matches {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .loading-matches {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
     }
 
     #channels {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 10px;
       max-height: 220px;
       overflow-y: auto;
       padding: 6px;
       scrollbar-width: thin;
-      scrollbar-color: #b5ff00 #0f0f0f;
+      scrollbar-color: var(--accent-primary) var(--bg-secondary);
     }
 
     #channels::-webkit-scrollbar {
@@ -250,31 +334,31 @@
     }
 
     #channels::-webkit-scrollbar-track {
-      background: #0f0f0f;
+      background: var(--bg-secondary);
       border-radius: 5px;
     }
 
     #channels::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #b5ff00 0%, #8fcc00 100%);
+      background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       border-radius: 5px;
     }
 
     #channels::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #c9ff33 0%, #b5ff00 100%);
+      background: linear-gradient(180deg, #c9ff33 0%, var(--accent-primary) 100%);
     }
 
-    /* Channel button wrapper */
     .channel-wrapper {
       display: flex;
       flex-direction: column;
       gap: 6px;
+      position: relative;
     }
 
-    button.channel-btn {
+    .channel-btn {
       padding: 12px 20px;
-      background: #0f0f0f;
-      color: #fff;
-      border: 2px solid #1a1a1a;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
       border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
@@ -282,59 +366,61 @@
       transition: all 0.3s;
       white-space: nowrap;
       position: relative;
-      min-width: 140px;
+      width: 100%;
+      font-family: inherit;
     }
 
-    button.channel-btn:hover {
-      background: #1a1a1a;
-      border-color: #b5ff00;
+    .channel-btn:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-primary);
       transform: translateY(-2px);
       box-shadow: 0 4px 15px rgba(181, 255, 0, 0.3);
     }
 
-    button.channel-btn.active {
-      background: linear-gradient(135deg, #b5ff00 0%, #8fcc00 100%);
-      border-color: #b5ff00;
+    .channel-btn:active {
+      transform: translateY(0);
+    }
+
+    .channel-btn.active {
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      border-color: var(--accent-primary);
       color: #000000;
       box-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
       font-weight: 700;
     }
 
-    button.channel-btn.active::before {
+    .channel-btn.active::before {
       content: "⚡";
       position: absolute;
       left: 10px;
       font-size: 12px;
     }
 
-    button.channel-btn.hidden {
-      display: none;
-    }
-
-    /* Folder selector styling */
     .folder-selector {
       padding: 6px 10px;
-      background: #0f0f0f;
-      border: 1px solid #1a1a1a;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
       border-radius: 6px;
-      color: #666;
+      color: var(--text-secondary);
       font-size: 11px;
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
       font-weight: 500;
+      width: 100%;
+      font-family: inherit;
     }
 
     .folder-selector:hover {
-      border-color: #b5ff00;
+      border-color: var(--accent-primary);
       background: #141414;
-      color: #b5ff00;
+      color: var(--accent-primary);
     }
 
     .folder-selector:focus {
       outline: none;
-      border-color: #b5ff00;
-      color: #fff;
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
       box-shadow: 0 0 10px rgba(181, 255, 0, 0.2);
     }
 
@@ -342,7 +428,7 @@
       position: relative;
       width: 100%;
       height: calc(100vh - 180px);
-      background: #000;
+      background: var(--bg-primary);
     }
 
     iframe {
@@ -351,21 +437,24 @@
       border: none;
     }
 
-    #loading {
+    .overlay-message {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 18px;
-      color: #666;
       text-align: center;
-      display: none;
       z-index: 10;
+      display: none;
+    }
+
+    #loading.show,
+    #error-msg.show {
+      display: block;
     }
 
     .spinner {
-      border: 4px solid #1a1a1a;
-      border-top: 4px solid #b5ff00;
+      border: 4px solid var(--border-color);
+      border-top: 4px solid var(--accent-primary);
       border-radius: 50%;
       width: 60px;
       height: 60px;
@@ -380,16 +469,15 @@
     }
 
     #error-msg {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      color: #ff4444;
-      display: none;
+      color: var(--error-color);
       max-width: 400px;
       padding: 20px;
-      z-index: 10;
+    }
+
+    .reconnect-info {
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
     }
 
     #controls-overlay {
@@ -398,7 +486,7 @@
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,0,0.9);
-      border: 2px solid #1a1a1a;
+      border: 2px solid var(--border-color);
       padding: 14px 24px;
       border-radius: 12px;
       display: flex;
@@ -416,7 +504,7 @@
     .control-btn {
       background: none;
       border: none;
-      color: #b5ff00;
+      color: var(--accent-primary);
       font-size: 28px;
       cursor: pointer;
       padding: 8px;
@@ -429,13 +517,17 @@
       filter: drop-shadow(0 0 10px rgba(181, 255, 0, 0.6));
     }
 
+    .control-btn:active {
+      transform: scale(1.1);
+    }
+
     .toast {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: #0f0f0f;
-      border: 2px solid #b5ff00;
-      color: white;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent-primary);
+      color: var(--text-primary);
       padding: 14px 24px;
       border-radius: 10px;
       box-shadow: 0 4px 20px rgba(181, 255, 0, 0.3);
@@ -444,6 +536,8 @@
       transform: translateY(20px);
       transition: all 0.3s;
       font-weight: 600;
+      pointer-events: none;
+      max-width: 300px;
     }
 
     .toast.show {
@@ -451,14 +545,13 @@
       transform: translateY(0);
     }
 
-    /* Keyboard shortcut hint */
     .shortcut-hint {
       position: fixed;
       bottom: 24px;
       left: 24px;
       background: rgba(0,0,0,0.9);
-      border: 1px solid #1a1a1a;
-      color: #666;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
       padding: 10px 16px;
       border-radius: 8px;
       font-size: 12px;
@@ -474,15 +567,6 @@
 
     /* Mobile optimizations */
     @media (max-width: 768px) {
-      .login-box {
-        padding: 40px 24px;
-      }
-
-      .login-logo {
-        max-width: 160px;
-        margin-bottom: 24px;
-      }
-
       #header {
         padding: 12px 16px;
       }
@@ -500,7 +584,6 @@
       }
 
       .header-controls {
-        flex-wrap: wrap;
         justify-content: center;
       }
 
@@ -518,24 +601,24 @@
         justify-content: center;
       }
 
-      .channel-wrapper {
-        flex: 1 1 calc(50% - 5px);
-        min-width: 140px;
+      #live-matches {
+        grid-template-columns: 1fr;
+        max-height: 200px;
       }
 
-      button.channel-btn {
+      #channels {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        max-height: 170px;
+      }
+
+      .channel-btn {
         padding: 12px 16px;
         font-size: 13px;
-        width: 100%;
       }
 
       .folder-selector {
         font-size: 10px;
         padding: 4px 8px;
-      }
-
-      #channels {
-        max-height: 170px;
       }
       
       #player-container {
@@ -551,7 +634,6 @@
       }
     }
 
-    /* Landscape mobile */
     @media (max-width: 768px) and (orientation: landscape) {
       #player-container {
         height: calc(100vh - 100px);
@@ -561,7 +643,7 @@
         padding: 8px 12px;
       }
 
-      button.channel-btn {
+      .channel-btn {
         padding: 8px 14px;
         font-size: 12px;
       }
@@ -569,151 +651,283 @@
       #channels {
         max-height: 90px;
       }
+
+      #live-matches {
+        max-height: 120px;
+      }
     }
   </style>
 </head>
 <body>
 
-<!-- Login Screen -->
-<div id="login-screen">
-  <div class="login-box">
-    <img src="logo__1_.png" alt="QuickPick" class="login-logo">
-    <h1>Stream</h1>
-    <p class="subtitle">Your premium sports streaming platform</p>
-    <form id="login-form">
-      <input 
-        type="password" 
-        id="password-input" 
-        placeholder="Enter password" 
-        autocomplete="current-password"
-        required
-      >
-      <button type="submit">⚡ Access Streams</button>
-    </form>
-    <div class="error-message" id="error-message">
-      ❌ Incorrect password. Please try again.
-    </div>
-  </div>
-</div>
-
-<!-- Main App -->
 <div id="app">
-  <div id="header">
+  <header id="header">
     <div class="header-top">
-      <img src="logo__1_.png" alt="QuickPick" class="header-logo">
+      <img src="logo__1_.png" alt="QuickPick Logo" class="header-logo" width="48" height="48">
       <div class="header-controls">
-        <input type="text" id="search-box" placeholder="🔍 Search channels...">
-        <button id="refresh-btn" title="Refresh stream">🔄 Refresh</button>
-        <button id="fullscreen-btn" title="Fullscreen (F)">⛶ Full</button>
-        <button id="logout-btn" title="Logout">🚪 Logout</button>
+        <input 
+          type="search" 
+          id="search-box" 
+          placeholder="🔍 Search channels..." 
+          aria-label="Search channels"
+        >
+        <button id="refresh-btn" class="btn" title="Refresh stream (R)" aria-label="Refresh stream">
+          🔄 Refresh
+        </button>
+        <button id="fullscreen-btn" class="btn" title="Fullscreen (F)" aria-label="Toggle fullscreen">
+          ⛶ Full
+        </button>
+        <button id="logout-btn" class="btn" title="Logout" aria-label="Logout">
+          🚪 Logout
+        </button>
       </div>
     </div>
 
-    <div id="current-channel">⚡ Select a channel to start</div>
+    <div id="current-channel" aria-live="polite">⚡ Select a channel to start</div>
 
-    <div id="channels"></div>
-  </div>
-
-  <div id="player-container">
-    <div id="loading">
-      <div class="spinner"></div>
-      <div>Loading stream...</div>
-      <small style="color: #666; margin-top: 10px;">This may take a few seconds</small>
+    <!-- Live Matches Section -->
+    <div id="live-matches-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="live-indicator"></span>
+          LIVE FOOTBALL MATCHES
+        </div>
+        <button id="refresh-matches-btn" class="btn" style="padding: 6px 12px; font-size: 12px;">
+          🔄 Refresh
+        </button>
+      </div>
+      <div id="live-matches">
+        <div class="loading-matches">
+          <div class="spinner" style="width: 40px; height: 40px; margin: 10px auto;"></div>
+          Loading live matches...
+        </div>
+      </div>
     </div>
-    <div id="error-msg">
-      <p style="font-size: 48px; margin: 0;">⚠️</p>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All Channels</button>
+      <button class="filter-tab" data-filter="sport">Sport TV</button>
+      <button class="filter-tab" data-filter="dazn">DAZN</button>
+    </div>
+
+    <div id="channels" role="list" aria-label="Channel list"></div>
+  </header>
+
+  <main id="player-container">
+    <div id="loading" class="overlay-message" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>Loading stream...</div>
+      <small style="color: var(--text-secondary); margin-top: 10px; display: block;">This may take a few seconds</small>
+    </div>
+    <div id="error-msg" class="overlay-message" role="alert">
+      <p style="font-size: 48px; margin: 0;" aria-hidden="true">⚠️</p>
       <p style="margin: 12px 0;">Stream unavailable</p>
       <small>Try another channel or refresh</small>
+      <div class="reconnect-info" id="reconnect-info"></div>
     </div>
-    <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    <iframe 
+      id="player" 
+      allowfullscreen 
+      allow="autoplay; fullscreen"
+      title="Stream player"
+    ></iframe>
     
-    <div id="controls-overlay">
-      <button class="control-btn" id="prev-btn" title="Previous (←)">⏮</button>
-      <button class="control-btn" id="next-btn" title="Next (→)">⏭</button>
+    <div id="controls-overlay" role="group" aria-label="Playback controls">
+      <button class="control-btn" id="prev-btn" title="Previous channel (←)" aria-label="Previous channel">
+        ⏮
+      </button>
+      <button class="control-btn" id="next-btn" title="Next channel (→)" aria-label="Next channel">
+        ⏭
+      </button>
     </div>
-  </div>
+  </main>
 </div>
 
-<div id="toast" class="toast"></div>
-<div id="shortcut-hint" class="shortcut-hint">
-  Press F for fullscreen • ← → to switch channels
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="shortcut-hint" class="shortcut-hint" aria-hidden="true">
+  Press F for fullscreen • ← → to switch channels • R to refresh
 </div>
 
 <script>
-  // ========== CONFIGURATION ==========
-  const CONFIG = {
-    PASSWORD: "imin",
-    SESSION_KEY: "stream_auth",
-    SESSION_DURATION: 24 * 60 * 60 * 1000, // 24 hours
-    LAST_CHANNEL_KEY: "lastChannel"
+'use strict';
+
+// ========== STREAMLINED AD PROTECTION (NON-INTERFERING) ==========
+(function() {
+  console.log('🛡️ Initializing protection...');
+  
+  // Block window.open
+  window.open = function() {
+    console.warn('🚫 Blocked window.open');
+    return null;
   };
+  
+  // Block window.opener
+  try {
+    Object.defineProperty(window, 'opener', {
+      get: () => null,
+      set: () => {},
+      configurable: false
+    });
+  } catch(e) {}
+  
+  // Block popunders
+  let lastBlur = 0;
+  window.addEventListener('blur', function() {
+    const now = Date.now();
+    if (now - lastBlur < 1000) {
+      setTimeout(() => window.focus(), 1);
+    }
+    lastBlur = now;
+  });
+  
+  // Block suspicious external links
+  document.addEventListener('click', function(e) {
+    const anchor = e.target.closest('a');
+    if (anchor && anchor.href) {
+      const href = anchor.href;
+      if (href.startsWith('http') && !href.includes(window.location.hostname)) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.warn('🚫 Blocked external link:', href);
+        return false;
+      }
+    }
+  }, true);
+  
+  // Block context menu on iframe
+  document.addEventListener('contextmenu', function(e) {
+    if (e.target.tagName === 'IFRAME') {
+      e.preventDefault();
+      return false;
+    }
+  });
+  
+  // Monitor for injected iframes
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      mutation.addedNodes.forEach(function(node) {
+        if (node.tagName === 'IFRAME' && node.id !== 'player') {
+          node.remove();
+          console.warn('🚫 Removed injected iframe');
+        }
+      });
+    });
+  });
+  
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+  
+  console.log('✅ Protection active');
+})();
 
-  const channels = [
-    { name: "SPORT TV1", id: 49, category: "sport" },
-    { name: "SPORT TV2", id: 74, category: "sport" },
-    { name: "SPORT TV3", id: 454, category: "sport" },
-    { name: "SPORT TV4", id: 289, category: "sport" },
-    { name: "SPORT TV5", id: 290, category: "sport" },
-    { name: "SPORT TV6", id: 291, category: "sport" },
-    { name: "DAZN 1", id: 455, category: "dazn" },
-    { name: "DAZN 2", id: 456, category: "dazn" },
-    { name: "DAZN 3", id: 457, category: "dazn" },
-    { name: "DAZN 4", id: 458, category: "dazn" },
-    { name: "DAZN 5", id: 459, category: "dazn" },
-    { name: "BTV", id: 380, category: "other" }
-  ];
+// ========== MAIN APPLICATION ==========
+const CONFIG = {
+  LAST_CHANNEL_KEY: 'lastChannel',
+  STREAM_BASE_URL: 'https://dlhd.link',
+  WATCHFOOTY_API_BASE: 'https://api.watchfooty.st/api/v1',
+  DEBOUNCE_DELAY: 300,
+  LOADING_TIMEOUT: 3000,
+  RECONNECT_MAX_ATTEMPTS: 3,
+  RECONNECT_DELAY: 5000,
+  LIVE_MATCHES_REFRESH_INTERVAL: 60000 // Refresh every 60 seconds
+};
 
-  // All available folders from the streaming service
-  const folders = ["stream","watch", "player","cast","casting","plus"];
+// Target leagues for filtering
+const TARGET_LEAGUES = [
+  'Premier League',
+  'English Premier League',
+  'La Liga',
+  'Spanish La Liga',
+  'Serie A',
+  'Italian Serie A',
+  'Bundesliga',
+  'German Bundesliga',
+  'Ligue 1',
+  'French Ligue 1',
+  'Primeira Liga',
+  'Portuguese Primeira Liga',
+  'Liga Portugal'
+];
 
-  // ========== DOM ELEMENTS ==========
-  const loginScreen = document.getElementById("login-screen");
-  const app = document.getElementById("app");
-  const loginForm = document.getElementById("login-form");
-  const passwordInput = document.getElementById("password-input");
-  const errorMessage = document.getElementById("error-message");
-  const logoutBtn = document.getElementById("logout-btn");
-  const channelsDiv = document.getElementById("channels");
-  const searchBox = document.getElementById("search-box");
-  const currentChannelDiv = document.getElementById("current-channel");
-  const player = document.getElementById("player");
-  const loading = document.getElementById("loading");
-  const errorMsg = document.getElementById("error-msg");
-  const fullscreenBtn = document.getElementById("fullscreen-btn");
-  const refreshBtn = document.getElementById("refresh-btn");
-  const prevBtn = document.getElementById("prev-btn");
-  const nextBtn = document.getElementById("next-btn");
-  const toast = document.getElementById("toast");
-  const shortcutHint = document.getElementById("shortcut-hint");
+const channels = [
+  { name: "SPORT TV1", id: 49, category: "sport" },
+  { name: "SPORT TV2", id: 74, category: "sport" },
+  { name: "SPORT TV3", id: 454, category: "sport" },
+  { name: "SPORT TV4", id: 289, category: "sport" },
+  { name: "SPORT TV5", id: 290, category: "sport" },
+  { name: "SPORT TV6", id: 291, category: "sport" },
+  { name: "DAZN 1", id: 455, category: "dazn" },
+  { name: "DAZN 2", id: 456, category: "dazn" },
+  { name: "DAZN 3", id: 457, category: "dazn" },
+  { name: "DAZN 4", id: 458, category: "dazn" },
+  { name: "DAZN 5", id: 459, category: "dazn" },
+  { name: "BTV", id: 380, category: "other" }
+];
 
-  // ========== STATE ==========
-  let currentButton = null;
-  let currentChannelId = null;
-  let currentChannelIndex = 0;
-  let visibleChannels = [...channels];
+const folders = ["stream", "watch", "player", "cast", "casting", "plus"];
 
-  // ========== UTILITY FUNCTIONS ==========
-  function showToast(message, duration = 2000) {
-    toast.textContent = message;
-    toast.classList.add("show");
+const elements = {
+  channelsDiv: document.getElementById("channels"),
+  searchBox: document.getElementById("search-box"),
+  currentChannelDiv: document.getElementById("current-channel"),
+  player: document.getElementById("player"),
+  loading: document.getElementById("loading"),
+  errorMsg: document.getElementById("error-msg"),
+  reconnectInfo: document.getElementById("reconnect-info"),
+  fullscreenBtn: document.getElementById("fullscreen-btn"),
+  refreshBtn: document.getElementById("refresh-btn"),
+  prevBtn: document.getElementById("prev-btn"),
+  nextBtn: document.getElementById("next-btn"),
+  toast: document.getElementById("toast"),
+  shortcutHint: document.getElementById("shortcut-hint"),
+  logoutBtn: document.getElementById("logout-btn"),
+  liveMatchesDiv: document.getElementById("live-matches"),
+  refreshMatchesBtn: document.getElementById("refresh-matches-btn")
+};
+
+const state = {
+  currentButton: null,
+  currentChannelId: null,
+  currentChannelIndex: 0,
+  visibleChannels: [...channels],
+  loadingTimer: null,
+  currentFilter: 'all',
+  liveMatches: [],
+  currentMatchCard: null,
+  liveMatchesRefreshTimer: null
+};
+
+const utils = {
+  debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+  },
+
+  showToast(message, duration = 2000) {
+    elements.toast.textContent = message;
+    elements.toast.classList.add("show");
     setTimeout(() => {
-      toast.classList.remove("show");
+      elements.toast.classList.remove("show");
     }, duration);
-  }
+  },
 
-  function getStreamUrl(id, folder) {
-    return `https://dlhd.link/${folder}/stream-${id}.php`;
-  }
+  getStreamUrl(id, folder) {
+    return `${CONFIG.STREAM_BASE_URL}/${folder}/stream-${id}.php`;
+  },
 
-  function saveToLocalStorage(key, value) {
+  saveToLocalStorage(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
       console.error("Failed to save to localStorage", e);
     }
-  }
+  },
 
-  function loadFromLocalStorage(key, defaultValue = null) {
+  loadFromLocalStorage(key, defaultValue = null) {
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : defaultValue;
@@ -721,187 +935,353 @@
       console.error("Failed to load from localStorage", e);
       return defaultValue;
     }
-  }
+  },
 
-  // ========== AUTHENTICATION ==========
-  function checkAuth() {
-    const authData = loadFromLocalStorage(CONFIG.SESSION_KEY);
-    if (authData) {
-      const { timestamp } = authData;
-      const now = Date.now();
-      
-      if (now - timestamp < CONFIG.SESSION_DURATION) {
-        showApp();
-        return true;
-      } else {
-        localStorage.removeItem(CONFIG.SESSION_KEY);
-      }
+  isTargetLeague(leagueName) {
+    return TARGET_LEAGUES.some(targetLeague => 
+      leagueName.toLowerCase().includes(targetLeague.toLowerCase()) ||
+      targetLeague.toLowerCase().includes(leagueName.toLowerCase())
+    );
+  }
+};
+
+const reconnect = {
+  attempts: 0,
+  timer: null,
+  
+  start() {
+    if (this.attempts >= CONFIG.RECONNECT_MAX_ATTEMPTS) {
+      player.showError();
+      elements.reconnectInfo.textContent = `Failed after ${CONFIG.RECONNECT_MAX_ATTEMPTS} attempts`;
+      return;
     }
-    return false;
-  }
-
-  loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const enteredPassword = passwordInput.value;
-
-    if (enteredPassword === CONFIG.PASSWORD) {
-      saveToLocalStorage(CONFIG.SESSION_KEY, { timestamp: Date.now() });
-      showApp();
-      passwordInput.value = "";
-      errorMessage.classList.remove("show");
-    } else {
-      errorMessage.classList.add("show");
-      passwordInput.value = "";
-      passwordInput.focus();
-      setTimeout(() => errorMessage.classList.remove("show"), 3000);
-    }
-  });
-
-  logoutBtn.addEventListener("click", () => {
-    if (confirm("Are you sure you want to logout?")) {
-      localStorage.removeItem(CONFIG.SESSION_KEY);
-      app.classList.remove("visible");
-      loginScreen.classList.remove("hidden");
-      player.src = "";
-      passwordInput.focus();
-      showToast("Logged out successfully");
-    }
-  });
-
-  function showApp() {
-    loginScreen.classList.add("hidden");
-    app.classList.add("visible");
-    initializePlayer();
-    setTimeout(() => {
-      shortcutHint.classList.add("show");
-      setTimeout(() => shortcutHint.classList.remove("show"), 4000);
-    }, 1000);
-  }
-
-  // ========== PLAYER FUNCTIONS ==========
-  function showLoading() {
-    loading.style.display = "block";
-    errorMsg.style.display = "none";
-  }
-
-  function hideLoading() {
-    loading.style.display = "none";
-  }
-
-  function showError() {
-    loading.style.display = "none";
-    errorMsg.style.display = "block";
-  }
-
-  function playChannel(id, wrapper, channelName) {
-    showLoading();
-
-    if (currentButton) currentButton.classList.remove("active");
     
+    this.attempts++;
+    elements.reconnectInfo.textContent = `Reconnecting... (${this.attempts}/${CONFIG.RECONNECT_MAX_ATTEMPTS})`;
+    utils.showToast(`Reconnecting... (${this.attempts}/${CONFIG.RECONNECT_MAX_ATTEMPTS})`, 3000);
+    
+    this.timer = setTimeout(() => {
+      player.refresh();
+    }, CONFIG.RECONNECT_DELAY);
+  },
+  
+  reset() {
+    this.attempts = 0;
+    clearTimeout(this.timer);
+    elements.reconnectInfo.textContent = '';
+  }
+};
+
+const player = {
+  showLoading() {
+    elements.loading.classList.add("show");
+    elements.errorMsg.classList.remove("show");
+    
+    clearTimeout(state.loadingTimer);
+    state.loadingTimer = setTimeout(() => {
+      this.hideLoading();
+    }, CONFIG.LOADING_TIMEOUT);
+  },
+
+  hideLoading() {
+    elements.loading.classList.remove("show");
+    clearTimeout(state.loadingTimer);
+  },
+
+  showError() {
+    elements.loading.classList.remove("show");
+    elements.errorMsg.classList.add("show");
+  },
+
+  play(id, wrapper, channelName) {
+    this.showLoading();
+    reconnect.reset();
+
+    if (state.currentButton) {
+      state.currentButton.classList.remove("active");
+    }
+    
+    if (state.currentMatchCard) {
+      state.currentMatchCard.classList.remove("active");
+    }
+
     const button = wrapper.querySelector('.channel-btn');
-    currentButton = button;
+    state.currentButton = button;
     button.classList.add("active");
 
-    currentChannelId = id;
-    currentChannelIndex = visibleChannels.findIndex(ch => ch.id === id);
-    currentChannelDiv.textContent = `⚡ ${channelName}`;
+    state.currentChannelId = id;
+    state.currentChannelIndex = state.visibleChannels.findIndex(ch => ch.id === id);
+    elements.currentChannelDiv.textContent = `⚡ ${channelName}`;
 
     const selector = wrapper.querySelector("select");
     const folder = selector ? selector.value : folders[0];
 
-    player.src = getStreamUrl(id, folder);
+    elements.player.src = utils.getStreamUrl(id, folder);
 
-    setTimeout(hideLoading, 3000);
+    utils.saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
+    utils.showToast(`⚡ Now playing: ${channelName}`);
+  },
 
-    saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
-    showToast(`⚡ Now playing: ${channelName}`);
-  }
+  playMatch(match) {
+    this.showLoading();
+    reconnect.reset();
 
-  function refreshStream() {
-    if (currentChannelId) {
-      showLoading();
-      const currentSrc = player.src;
-      player.src = "";
-      setTimeout(() => {
-        player.src = currentSrc;
-        setTimeout(hideLoading, 2000);
-      }, 100);
-      showToast("🔄 Refreshing stream...");
+    if (state.currentButton) {
+      state.currentButton.classList.remove("active");
     }
-  }
 
-  function playNextChannel() {
-    if (visibleChannels.length === 0) return;
+    if (state.currentMatchCard) {
+      state.currentMatchCard.classList.remove("active");
+    }
+
+    const matchCard = document.querySelector(`[data-match-id="${match.matchId}"]`);
+    if (matchCard) {
+      state.currentMatchCard = matchCard;
+      matchCard.classList.add("active");
+    }
+
+    state.currentChannelId = null;
     
-    currentChannelIndex = (currentChannelIndex + 1) % visibleChannels.length;
-    const nextChannel = visibleChannels[currentChannelIndex];
+    const matchTitle = `${match.teams.home.name} vs ${match.teams.away.name}`;
+    elements.currentChannelDiv.textContent = `⚽ ${matchTitle}`;
+
+    // Use the first available stream
+    if (match.streams && match.streams.length > 0) {
+      const stream = match.streams[0];
+      elements.player.src = stream.url;
+      utils.showToast(`⚽ Now watching: ${matchTitle}`);
+    } else {
+      this.showError();
+      utils.showToast("No streams available for this match");
+    }
+  },
+
+  refresh() {
+    if (state.currentChannelId) {
+      this.showLoading();
+      const currentSrc = elements.player.src;
+      elements.player.src = "";
+      setTimeout(() => {
+        elements.player.src = currentSrc;
+      }, 100);
+      utils.showToast("🔄 Refreshing stream...");
+    } else if (elements.player.src) {
+      // Refresh live match
+      this.showLoading();
+      const currentSrc = elements.player.src;
+      elements.player.src = "";
+      setTimeout(() => {
+        elements.player.src = currentSrc;
+      }, 100);
+      utils.showToast("🔄 Refreshing stream...");
+    }
+  },
+
+  next() {
+    if (state.visibleChannels.length === 0) return;
+    
+    state.currentChannelIndex = (state.currentChannelIndex + 1) % state.visibleChannels.length;
+    const nextChannel = state.visibleChannels[state.currentChannelIndex];
     const wrapper = document.querySelector(`[data-channel-id="${nextChannel.id}"]`);
     if (wrapper) {
-      playChannel(nextChannel.id, wrapper, nextChannel.name);
+      this.play(nextChannel.id, wrapper, nextChannel.name);
     }
-  }
+  },
 
-  function playPrevChannel() {
-    if (visibleChannels.length === 0) return;
+  prev() {
+    if (state.visibleChannels.length === 0) return;
     
-    currentChannelIndex = (currentChannelIndex - 1 + visibleChannels.length) % visibleChannels.length;
-    const prevChannel = visibleChannels[currentChannelIndex];
+    state.currentChannelIndex = (state.currentChannelIndex - 1 + state.visibleChannels.length) % state.visibleChannels.length;
+    const prevChannel = state.visibleChannels[state.currentChannelIndex];
     const wrapper = document.querySelector(`[data-channel-id="${prevChannel.id}"]`);
     if (wrapper) {
-      playChannel(prevChannel.id, wrapper, prevChannel.name);
+      this.play(prevChannel.id, wrapper, prevChannel.name);
     }
-  }
+  },
 
-  function toggleFullscreen() {
+  toggleFullscreen() {
     const container = document.getElementById("player-container");
     
     if (!document.fullscreenElement) {
       container.requestFullscreen().catch(err => {
-        showToast("Fullscreen not available");
+        utils.showToast("Fullscreen not available");
       });
-      fullscreenBtn.textContent = "⛶ Exit";
+      elements.fullscreenBtn.textContent = "⛶ Exit";
     } else {
       document.exitFullscreen();
-      fullscreenBtn.textContent = "⛶ Full";
+      elements.fullscreenBtn.textContent = "⛶ Full";
     }
   }
+};
 
-  // ========== SEARCH ==========
-  function filterChannels(searchTerm) {
-    const term = searchTerm.toLowerCase().trim();
+const liveMatches = {
+  async fetchLiveMatches() {
+    try {
+      console.log('🔄 Fetching live football matches...');
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/live`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Received matches:', data.length);
+      
+      // Filter for target leagues only
+      const filtered = data.filter(match => {
+        const isTargetLeague = utils.isTargetLeague(match.league);
+        if (isTargetLeague) {
+          console.log('✓ Matched league:', match.league, '-', match.title);
+        }
+        return isTargetLeague;
+      });
+      
+      console.log('🎯 Filtered to target leagues:', filtered.length);
+      
+      state.liveMatches = filtered;
+      this.render();
+      
+      return filtered;
+    } catch (error) {
+      console.error('❌ Error fetching live matches:', error);
+      this.renderError();
+      return [];
+    }
+  },
+
+  createMatchCard(match) {
+    const card = document.createElement('div');
+    card.className = 'match-card';
+    card.dataset.matchId = match.matchId;
     
-    if (!term) {
-      visibleChannels = [...channels];
-    } else {
-      visibleChannels = channels.filter(ch => 
+    const statusText = match.currentMinute || 'LIVE';
+    const streamsCount = match.streams ? match.streams.length : 0;
+    
+    card.innerHTML = `
+      <div class="match-header">
+        <div class="match-league">${match.league}</div>
+        <div class="match-status">
+          <span class="live-indicator"></span>
+          ${statusText}
+        </div>
+      </div>
+      <div class="match-teams">
+        <div class="match-team">
+          <span class="team-name">${match.teams.home.name}</span>
+          <span class="team-score">${match.scores?.home ?? '-'}</span>
+        </div>
+        <div class="match-team">
+          <span class="team-name">${match.teams.away.name}</span>
+          <span class="team-score">${match.scores?.away ?? '-'}</span>
+        </div>
+      </div>
+      <div class="match-streams-count">
+        📡 ${streamsCount} stream${streamsCount !== 1 ? 's' : ''} available
+      </div>
+    `;
+    
+    card.addEventListener('click', () => {
+      if (match.streams && match.streams.length > 0) {
+        player.playMatch(match);
+      } else {
+        utils.showToast('No streams available for this match');
+      }
+    });
+    
+    return card;
+  },
+
+  render() {
+    elements.liveMatchesDiv.innerHTML = '';
+    
+    if (state.liveMatches.length === 0) {
+      elements.liveMatchesDiv.innerHTML = `
+        <div class="no-matches">
+          ⚽ No live matches from the 6 major European leagues at the moment
+        </div>
+      `;
+      return;
+    }
+    
+    state.liveMatches.forEach(match => {
+      const card = this.createMatchCard(match);
+      elements.liveMatchesDiv.appendChild(card);
+    });
+    
+    console.log('✅ Rendered', state.liveMatches.length, 'live match cards');
+  },
+
+  renderError() {
+    elements.liveMatchesDiv.innerHTML = `
+      <div class="no-matches">
+        ⚠️ Unable to load live matches. Please try refreshing.
+      </div>
+    `;
+  },
+
+  startAutoRefresh() {
+    // Clear existing timer if any
+    if (state.liveMatchesRefreshTimer) {
+      clearInterval(state.liveMatchesRefreshTimer);
+    }
+    
+    // Set up auto-refresh
+    state.liveMatchesRefreshTimer = setInterval(() => {
+      console.log('🔄 Auto-refreshing live matches...');
+      this.fetchLiveMatches();
+    }, CONFIG.LIVE_MATCHES_REFRESH_INTERVAL);
+    
+    console.log('✅ Auto-refresh enabled (every 60s)');
+  },
+
+  stopAutoRefresh() {
+    if (state.liveMatchesRefreshTimer) {
+      clearInterval(state.liveMatchesRefreshTimer);
+      state.liveMatchesRefreshTimer = null;
+      console.log('⏹️ Auto-refresh stopped');
+    }
+  }
+};
+
+const channelManager = {
+  filter(searchTerm, filterType = state.currentFilter) {
+    const term = searchTerm.toLowerCase().trim();
+    let filtered = [...channels];
+    
+    if (filterType !== 'all') {
+      filtered = filtered.filter(ch => ch.category === filterType);
+    }
+    
+    if (term) {
+      filtered = filtered.filter(ch => 
         ch.name.toLowerCase().includes(term) ||
         ch.category.toLowerCase().includes(term)
       );
     }
     
-    renderChannels();
+    state.visibleChannels = filtered;
+    this.render();
     
-    if (visibleChannels.length === 0) {
-      showToast("No channels found");
+    if (state.visibleChannels.length === 0) {
+      utils.showToast("No channels found");
     }
-  }
+  },
 
-  // ========== RENDER ==========
-  function createChannelButton(channel) {
-    // Create wrapper
+  createButton(channel) {
     const wrapper = document.createElement("div");
     wrapper.className = "channel-wrapper";
     wrapper.dataset.channelId = channel.id;
+    wrapper.setAttribute("role", "listitem");
 
-    // Create button
     const btn = document.createElement("button");
     btn.className = "channel-btn";
     btn.textContent = channel.name;
+    btn.type = "button";
 
-    // Create folder selector
     const selector = document.createElement("select");
     selector.className = "folder-selector";
     selector.title = "Select stream source";
+    selector.setAttribute("aria-label", `Stream source for ${channel.name}`);
 
     folders.forEach(folder => {
       const option = document.createElement("option");
@@ -910,63 +1290,71 @@
       selector.appendChild(option);
     });
 
-    // Load saved preference
-    const savedFolder = loadFromLocalStorage(`channel_${channel.id}_folder`) || folders[0];
+    const savedFolder = utils.loadFromLocalStorage(`channel_${channel.id}_folder`) || folders[0];
     selector.value = savedFolder;
 
-    // Handle folder change
     selector.addEventListener("change", (e) => {
-      e.stopPropagation(); // Prevent triggering channel play
-      saveToLocalStorage(`channel_${channel.id}_folder`, e.target.value);
+      e.stopPropagation();
+      utils.saveToLocalStorage(`channel_${channel.id}_folder`, e.target.value);
       
-      // If this channel is currently playing, switch immediately
-      if (currentChannelId === channel.id) {
-        player.src = getStreamUrl(channel.id, e.target.value);
-        showToast(`⚡ Switched to: ${e.target.value}`, 1500);
+      if (state.currentChannelId === channel.id) {
+        elements.player.src = utils.getStreamUrl(channel.id, e.target.value);
+        utils.showToast(`⚡ Switched to: ${e.target.value}`, 1500);
       }
     });
 
-    // Handle channel click
-    btn.onclick = () => playChannel(channel.id, wrapper, channel.name);
+    btn.onclick = () => player.play(channel.id, wrapper, channel.name);
 
-    // Assemble
     wrapper.appendChild(btn);
     wrapper.appendChild(selector);
 
     return wrapper;
-  }
+  },
 
-  function renderChannels() {
-    channelsDiv.innerHTML = "";
+  render() {
+    elements.channelsDiv.innerHTML = "";
     
-    visibleChannels.forEach(ch => {
-      const wrapper = createChannelButton(ch);
-      channelsDiv.appendChild(wrapper);
+    if (state.visibleChannels.length === 0) {
+      elements.channelsDiv.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No channels found</p>';
+      return;
+    }
+    
+    state.visibleChannels.forEach(ch => {
+      const wrapper = this.createButton(ch);
+      elements.channelsDiv.appendChild(wrapper);
     });
   }
+};
 
-  // ========== KEYBOARD SHORTCUTS ==========
-  document.addEventListener("keydown", (e) => {
+const handlers = {
+  logout() {
+    if (confirm("Are you sure you want to logout?")) {
+      document.cookie = "auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Secure; SameSite=Strict";
+      window.location.href = "/";
+    }
+  },
+
+  keyboard(e) {
     if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
     
     switch(e.key) {
       case "f":
       case "F":
         e.preventDefault();
-        toggleFullscreen();
+        player.toggleFullscreen();
         break;
       case "ArrowRight":
         e.preventDefault();
-        playNextChannel();
+        player.next();
         break;
       case "ArrowLeft":
         e.preventDefault();
-        playPrevChannel();
+        player.prev();
         break;
       case "r":
       case "R":
         e.preventDefault();
-        refreshStream();
+        player.refresh();
         break;
       case "Escape":
         if (document.fullscreenElement) {
@@ -974,37 +1362,86 @@
         }
         break;
     }
+  }
+};
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    const filter = this.dataset.filter;
+    state.currentFilter = filter;
+    channelManager.filter(elements.searchBox.value, filter);
+  });
+});
+
+// Initialize
+async function init() {
+  console.log('🚀 Initializing app...');
+  
+  channelManager.render();
+  
+  // Fetch live matches
+  await liveMatches.fetchLiveMatches();
+  
+  // Start auto-refresh for live matches
+  liveMatches.startAutoRefresh();
+  
+  const lastChannelId = utils.loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
+  const defaultChannel = lastChannelId 
+    ? channels.find(ch => ch.id == lastChannelId) || channels[0]
+    : channels[0];
+  
+  const defaultWrapper = document.querySelector(`[data-channel-id="${defaultChannel.id}"]`);
+  if (defaultWrapper) {
+    player.play(defaultChannel.id, defaultWrapper, defaultChannel.name);
+  }
+  
+  setTimeout(() => {
+    elements.shortcutHint.classList.add("show");
+    setTimeout(() => elements.shortcutHint.classList.remove("show"), 4000);
+  }, 1000);
+
+  // Event listeners
+  elements.searchBox.addEventListener("input", 
+    utils.debounce((e) => channelManager.filter(e.target.value), CONFIG.DEBOUNCE_DELAY)
+  );
+  elements.refreshBtn.addEventListener("click", () => player.refresh());
+  elements.fullscreenBtn.addEventListener("click", () => player.toggleFullscreen());
+  elements.prevBtn.addEventListener("click", () => player.prev());
+  elements.nextBtn.addEventListener("click", () => player.next());
+  elements.logoutBtn.addEventListener("click", handlers.logout);
+  elements.refreshMatchesBtn.addEventListener("click", () => {
+    utils.showToast("🔄 Refreshing matches...");
+    liveMatches.fetchLiveMatches();
+  });
+  document.addEventListener("keydown", handlers.keyboard);
+
+  // Iframe events
+  elements.player.addEventListener("load", () => {
+    player.hideLoading();
+    reconnect.reset();
   });
 
-  // ========== EVENT LISTENERS ==========
-  searchBox.addEventListener("input", (e) => {
-    filterChannels(e.target.value);
+  elements.player.addEventListener("error", () => {
+    reconnect.start();
   });
 
-  refreshBtn.addEventListener("click", refreshStream);
-  fullscreenBtn.addEventListener("click", toggleFullscreen);
-  prevBtn.addEventListener("click", playPrevChannel);
-  nextBtn.addEventListener("click", playNextChannel);
+  // Clean up on page unload
+  window.addEventListener('beforeunload', () => {
+    liveMatches.stopAutoRefresh();
+  });
 
-  // ========== INITIALIZATION ==========
-  function initializePlayer() {
-    renderChannels();
-    
-    const lastChannelId = loadFromLocalStorage(CONFIG.LAST_CHANNEL_KEY);
-    const defaultChannel = lastChannelId 
-      ? channels.find(ch => ch.id == lastChannelId) || channels[0]
-      : channels[0];
-    
-    const defaultWrapper = document.querySelector(`[data-channel-id="${defaultChannel.id}"]`);
-    if (defaultWrapper) {
-      playChannel(defaultChannel.id, defaultWrapper, defaultChannel.name);
-    }
-  }
+  console.log('✅ App initialized');
+}
 
-  // ========== START APP ==========
-  if (!checkAuth()) {
-    passwordInput.focus();
-  }
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
 </script>
 
 </body>
