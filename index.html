@@ -801,6 +801,12 @@
       </div>
     </div>
 
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">All Channels</button>
+      <button class="filter-tab" data-filter="sport">Sport TV</button>
+      <button class="filter-tab" data-filter="dazn">DAZN</button>
+    </div>
+
     <div id="channels" role="list" aria-label="Channel list"></div>
   </header>
 
@@ -1725,6 +1731,18 @@ const handlers = {
     }
   }
 };
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    
+    const filter = this.dataset.filter;
+    state.currentFilter = filter;
+    channelManager.filter(elements.searchBox.value, filter);
+  });
+});
 
 // Initialize
 async function init() {
