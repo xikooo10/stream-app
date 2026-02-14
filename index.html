@@ -862,22 +862,8 @@ const CONFIG = {
   LIVE_MATCHES_REFRESH_INTERVAL: 60000 // Refresh every 60 seconds
 };
 
-// Target leagues for filtering
-const TARGET_LEAGUES = [
-  'Premier League',
-  'English Premier League',
-  'La Liga',
-  'Spanish La Liga',
-  'Serie A',
-  'Italian Serie A',
-  'Bundesliga',
-  'German Bundesliga',
-  'Ligue 1',
-  'French Ligue 1',
-  'Primeira Liga',
-  'Portuguese Primeira Liga',
-  'Liga Portugal'
-];
+// We'll fetch popular leagues from the API instead of hardcoding
+let POPULAR_LEAGUES = [];
 
 const channels = [
   { name: "SPORT TV1", id: 49, category: "sport" },
@@ -969,10 +955,50 @@ const utils = {
   },
 
   isTargetLeague(leagueName) {
-    return TARGET_LEAGUES.some(targetLeague => 
-      leagueName.toLowerCase().includes(targetLeague.toLowerCase()) ||
-      targetLeague.toLowerCase().includes(leagueName.toLowerCase())
+    if (POPULAR_LEAGUES.length === 0) return true; // Show all if popular leagues not loaded yet
+    
+    return POPULAR_LEAGUES.some(popularLeague => 
+      leagueName.toLowerCase().includes(popularLeague.toLowerCase()) ||
+      popularLeague.toLowerCase().includes(leagueName.toLowerCase())
     );
+  },
+
+  async fetchPopularLeagues() {
+    try {
+      console.log('🔄 Fetching popular football leagues...');
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/top-leagues/football`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Received popular leagues:', data.length);
+      
+      POPULAR_LEAGUES = data;
+      return data;
+    } catch (error) {
+      console.error('❌ Error fetching popular leagues:', error);
+      // Fallback to the 6 major European leagues if API fails
+      POPULAR_LEAGUES = [
+        'Premier League',
+        'English Premier League',
+        'La Liga',
+        'Spanish La Liga',
+        'Serie A',
+        'Italian Serie A',
+        'Bundesliga',
+        'German Bundesliga',
+        'Ligue 1',
+        'French Ligue 1',
+        'Primeira Liga',
+        'Portuguese Primeira Liga',
+        'Liga Portugal',
+        'UEFA Champions League',
+        'UEFA Europa League'
+      ];
+      return POPULAR_LEAGUES;
+    }
   }
 };
 
@@ -1151,31 +1177,29 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching live football matches...');
-      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/live`);
+      console.log('🔄 Fetching popular live football matches...');
+      // Use the popular/live endpoint which filters for top leagues and teams
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('✅ Received matches:', data.length);
+      console.log('✅ Received popular matches:', data.length);
       
-      // Filter for target leagues only
-      const filtered = data.filter(match => {
-        const isTargetLeague = utils.isTargetLeague(match.league);
-        if (isTargetLeague) {
-          console.log('✓ Matched league:', match.league, '-', match.title);
-        }
-        return isTargetLeague;
+      // Filter for only live matches
+      const liveMatches = data.filter(match => {
+        const status = match.status?.toLowerCase() || '';
+        return status === 'in' || status === 'live' || match.currentMinute;
       });
       
-      console.log('🎯 Filtered to target leagues:', filtered.length);
+      console.log('🎯 Filtered to live matches:', liveMatches.length);
       
-      state.liveMatches = filtered;
+      state.liveMatches = liveMatches;
       this.render();
       
-      return filtered;
+      return liveMatches;
     } catch (error) {
       console.error('❌ Error fetching live matches:', error);
       this.renderError();
@@ -1254,7 +1278,7 @@ const liveMatches = {
     if (state.liveMatches.length === 0) {
       elements.liveMatchesDiv.innerHTML = `
         <div class="no-matches">
-          ⚽ No live matches from the 6 major European leagues at the moment
+          ⚽ No live matches from popular leagues at the moment
         </div>
       `;
       return;
@@ -1440,7 +1464,10 @@ async function init() {
   
   channelManager.render();
   
-  // Fetch live matches
+  // Fetch popular leagues first (optional, for fallback filtering)
+  await utils.fetchPopularLeagues();
+  
+  // Fetch popular live matches
   await liveMatches.fetchLiveMatches();
   
   // Start auto-refresh for live matches
