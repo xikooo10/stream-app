@@ -329,42 +329,36 @@
       text-align: right;
     }
 
-    .match-streams {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
+    .match-stream-selector {
       margin-top: 8px;
-      min-height: 26px;
     }
 
-    .stream-btn {
+    .stream-selector {
       padding: 4px 8px;
-      background: var(--bg-tertiary);
+      background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 4px;
-      font-size: 10px;
       color: var(--text-secondary);
+      font-size: 10px;
       cursor: pointer;
       transition: all 0.2s;
+      text-align: center;
       font-weight: 500;
+      width: 100%;
+      font-family: inherit;
     }
 
-    .stream-btn:hover {
-      background: var(--bg-secondary);
+    .stream-selector:hover {
       border-color: var(--accent-primary);
+      background: #141414;
       color: var(--accent-primary);
     }
 
-    .stream-btn.active {
-      background: var(--accent-primary);
+    .stream-selector:focus {
+      outline: none;
       border-color: var(--accent-primary);
-      color: #000;
-      font-weight: 700;
-    }
-
-    .stream-quality {
-      font-weight: 600;
-      text-transform: uppercase;
+      color: var(--text-primary);
+      box-shadow: 0 0 10px rgba(181, 255, 0, 0.2);
     }
 
     .no-streams-msg {
@@ -372,6 +366,7 @@
       color: var(--text-secondary);
       text-align: center;
       padding: 6px;
+      font-style: italic;
     }
 
     .no-matches {
@@ -1338,22 +1333,28 @@ const liveMatches = {
     // Time badge - always show as live since we only fetch live matches
     const timeBadge = `<div class="match-time-badge">${currentMinute}'</div>`;
     
-    // Create streams HTML
+    // Filter streams to only show HD quality (exclude SD)
+    const hdStreams = match.streams ? match.streams.filter(stream => {
+      const quality = (stream.quality || '').toLowerCase();
+      return quality !== 'sd' && quality !== 'low';
+    }) : [];
+    
+    // Create streams selector (dropdown style like channels)
     let streamsHTML = '';
-    if (match.streams && match.streams.length > 0) {
-      streamsHTML = '<div class="match-streams">';
-      match.streams.forEach((stream, index) => {
-        const quality = stream.quality || 'HD';
-        const language = stream.language || 'EN';
-        streamsHTML += `
-          <button class="stream-btn" data-stream-index="${index}" title="${quality} - ${language}">
-            <span class="stream-quality">${quality}</span> ${language}
-          </button>
-        `;
-      });
-      streamsHTML += '</div>';
+    if (hdStreams.length > 0) {
+      streamsHTML = `
+        <select class="stream-selector" data-match-id="${match.matchId}" aria-label="Select stream quality">
+          ${hdStreams.map((stream, index) => {
+            const quality = stream.quality || 'HD';
+            const language = stream.language || 'EN';
+            // Find the original index in the full streams array
+            const originalIndex = match.streams.indexOf(stream);
+            return `<option value="${originalIndex}">${quality} - ${language}</option>`;
+          }).join('')}
+        </select>
+      `;
     } else {
-      streamsHTML = '<div class="match-streams"><div class="no-streams-msg">No streams</div></div>';
+      streamsHTML = '<div class="no-streams-msg">No HD streams</div>';
     }
     
     card.innerHTML = `
@@ -1371,24 +1372,31 @@ const liveMatches = {
           <span class="team-score">${awayScore}</span>
         </div>
       </div>
-      ${streamsHTML}
+      <div class="match-stream-selector">
+        ${streamsHTML}
+      </div>
     `;
     
-    // Add click handlers for stream buttons
-    if (match.streams && match.streams.length > 0) {
-      const streamBtns = card.querySelectorAll('.stream-btn');
-      streamBtns.forEach((btn, index) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          
-          // Remove active class from all stream buttons
-          document.querySelectorAll('.stream-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          
-          // Play the selected stream
-          player.playMatch(match, index);
-        });
+    // Add click handler for the entire card (plays first HD stream)
+    if (hdStreams.length > 0) {
+      card.addEventListener('click', (e) => {
+        // Don't trigger if clicking the select dropdown
+        if (e.target.classList.contains('stream-selector')) return;
+        
+        const selector = card.querySelector('.stream-selector');
+        const streamIndex = selector ? parseInt(selector.value) : match.streams.indexOf(hdStreams[0]);
+        player.playMatch(match, streamIndex);
       });
+      
+      // Add change handler for stream selector
+      const selector = card.querySelector('.stream-selector');
+      if (selector) {
+        selector.addEventListener('change', (e) => {
+          e.stopPropagation();
+          const streamIndex = parseInt(e.target.value);
+          player.playMatch(match, streamIndex);
+        });
+      }
     }
     
     return card;
