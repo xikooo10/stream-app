@@ -43,7 +43,7 @@
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 2px solid var(--border-color);
-      padding: 16px 20px;
+      padding: 10px 16px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.8);
       position: sticky;
       top: 0;
@@ -54,60 +54,60 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
-      gap: 16px;
+      margin-bottom: 10px;
+      gap: 12px;
     }
 
     .header-logo {
-      height: 48px;
-      width: 48px;
+      height: 36px;
+      width: 36px;
       filter: drop-shadow(0 0 10px rgba(181, 255, 0, 0.3));
       border-radius: 50%;
     }
 
     .header-controls {
       display: flex;
-      gap: 10px;
+      gap: 6px;
       align-items: center;
       flex-wrap: wrap;
     }
 
     #current-channel {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--accent-primary);
       text-shadow: 0 0 10px rgba(181, 255, 0, 0.4);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     #search-box {
-      padding: 10px 16px;
+      padding: 6px 12px;
       background: var(--bg-secondary);
       border: 2px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 6px;
       color: var(--text-primary);
-      font-size: 14px;
-      width: 200px;
+      font-size: 12px;
+      width: 160px;
       transition: all 0.3s;
     }
 
     #search-box:focus {
       outline: none;
       border-color: var(--accent-primary);
-      width: 260px;
+      width: 200px;
       box-shadow: 0 0 15px rgba(181, 255, 0, 0.15);
     }
 
     .btn {
-      padding: 10px 18px;
+      padding: 6px 12px;
       background: var(--bg-secondary);
       color: var(--text-primary);
       border: 2px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 600;
       white-space: nowrap;
       transition: all 0.3s;
@@ -132,18 +132,18 @@
 
     .filter-tabs {
       display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 6px;
+      margin-bottom: 8px;
       flex-wrap: wrap;
     }
 
     .filter-tab {
-      padding: 6px 14px;
+      padding: 4px 10px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 11px;
       transition: all 0.2s;
       color: var(--text-secondary);
     }
@@ -164,31 +164,31 @@
     #live-matches-section {
       background: rgba(15, 15, 15, 0.9);
       border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .section-title {
-      font-size: 16px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--accent-primary);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
 
     .live-indicator {
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       background: var(--live-indicator);
       border-radius: 50%;
       animation: pulse 2s infinite;
@@ -201,35 +201,34 @@
 
     #live-matches {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-      max-height: 300px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px;
+      max-height: 200px;
       overflow-y: auto;
-      padding: 6px;
+      padding: 4px;
       scrollbar-width: thin;
       scrollbar-color: var(--accent-primary) var(--bg-secondary);
     }
 
     #live-matches::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
 
     #live-matches::-webkit-scrollbar-track {
       background: var(--bg-secondary);
-      border-radius: 5px;
+      border-radius: 4px;
     }
 
     #live-matches::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
-      border-radius: 5px;
+      border-radius: 4px;
     }
 
     .match-card {
       background: var(--bg-secondary);
-      border: 2px solid var(--border-color);
-      border-radius: 10px;
-      padding: 12px;
-      cursor: pointer;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
       transition: all 0.3s;
       position: relative;
     }
@@ -237,49 +236,49 @@
     .match-card:hover {
       background: var(--bg-tertiary);
       border-color: var(--accent-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(181, 255, 0, 0.3);
+      box-shadow: 0 2px 10px rgba(181, 255, 0, 0.3);
     }
 
     .match-card.active {
       background: linear-gradient(135deg, rgba(181, 255, 0, 0.15) 0%, rgba(143, 204, 0, 0.15) 100%);
       border-color: var(--accent-primary);
-      box-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
+      box-shadow: 0 0 15px rgba(181, 255, 0, 0.4);
     }
 
     .match-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .match-league {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-secondary);
       font-weight: 600;
     }
 
     .match-status {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--accent-primary);
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
     }
 
     .match-teams {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
+      margin-bottom: 6px;
     }
 
     .match-team {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
     }
 
@@ -291,46 +290,76 @@
     }
 
     .team-score {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--accent-primary);
-      margin-left: 8px;
+      margin-left: 6px;
     }
 
-    .match-streams-count {
-      margin-top: 8px;
-      font-size: 11px;
+    .match-streams {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .stream-btn {
+      padding: 3px 8px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 10px;
       color: var(--text-secondary);
-      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .stream-btn:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .stream-btn.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: #000;
+      font-weight: 700;
+    }
+
+    .stream-quality {
+      font-weight: 600;
+      text-transform: uppercase;
     }
 
     .no-matches {
       text-align: center;
-      padding: 20px;
+      padding: 15px;
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 12px;
     }
 
     .loading-matches {
       text-align: center;
-      padding: 20px;
+      padding: 15px;
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 12px;
     }
 
     #channels {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-      max-height: 220px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px;
+      max-height: 140px;
       overflow-y: auto;
-      padding: 6px;
+      padding: 4px;
       scrollbar-width: thin;
       scrollbar-color: var(--accent-primary) var(--bg-secondary);
     }
 
     #channels::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
 
     #channels::-webkit-scrollbar-track {
@@ -355,13 +384,13 @@
     }
 
     .channel-btn {
-      padding: 12px 20px;
+      padding: 8px 12px;
       background: var(--bg-secondary);
       color: var(--text-primary);
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 600;
       transition: all 0.3s;
       white-space: nowrap;
@@ -373,8 +402,8 @@
     .channel-btn:hover {
       background: var(--bg-tertiary);
       border-color: var(--accent-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(181, 255, 0, 0.3);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 10px rgba(181, 255, 0, 0.3);
     }
 
     .channel-btn:active {
@@ -385,24 +414,24 @@
       background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
       border-color: var(--accent-primary);
       color: #000000;
-      box-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
+      box-shadow: 0 0 15px rgba(181, 255, 0, 0.4);
       font-weight: 700;
     }
 
     .channel-btn.active::before {
       content: "⚡";
       position: absolute;
-      left: 10px;
-      font-size: 12px;
+      left: 6px;
+      font-size: 10px;
     }
 
     .folder-selector {
-      padding: 6px 10px;
+      padding: 3px 6px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
-      border-radius: 6px;
+      border-radius: 4px;
       color: var(--text-secondary);
-      font-size: 11px;
+      font-size: 9px;
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
@@ -427,7 +456,7 @@
     #player-container {
       position: relative;
       width: 100%;
-      height: calc(100vh - 180px);
+      height: calc(100vh - 120px);
       background: var(--bg-primary);
     }
 
@@ -568,18 +597,18 @@
     /* Mobile optimizations */
     @media (max-width: 768px) {
       #header {
-        padding: 12px 16px;
+        padding: 8px 12px;
       }
 
       .header-top {
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
         align-items: stretch;
       }
 
       .header-logo {
-        height: 40px;
-        width: 40px;
+        height: 32px;
+        width: 32px;
         margin: 0 auto;
       }
 
@@ -596,33 +625,33 @@
       }
 
       #current-channel {
-        font-size: 16px;
+        font-size: 12px;
         text-align: center;
         justify-content: center;
       }
 
       #live-matches {
         grid-template-columns: 1fr;
-        max-height: 200px;
+        max-height: 150px;
       }
 
       #channels {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        max-height: 170px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        max-height: 100px;
       }
 
       .channel-btn {
-        padding: 12px 16px;
-        font-size: 13px;
+        padding: 6px 10px;
+        font-size: 10px;
       }
 
       .folder-selector {
-        font-size: 10px;
-        padding: 4px 8px;
+        font-size: 8px;
+        padding: 2px 4px;
       }
       
       #player-container {
-        height: calc(100vh - 220px);
+        height: calc(100vh - 160px);
       }
 
       #controls-overlay {
@@ -636,24 +665,24 @@
 
     @media (max-width: 768px) and (orientation: landscape) {
       #player-container {
-        height: calc(100vh - 100px);
+        height: calc(100vh - 80px);
       }
 
       #header {
-        padding: 8px 12px;
+        padding: 6px 10px;
       }
 
       .channel-btn {
-        padding: 8px 14px;
-        font-size: 12px;
+        padding: 5px 8px;
+        font-size: 9px;
       }
 
       #channels {
-        max-height: 90px;
+        max-height: 70px;
       }
 
       #live-matches {
-        max-height: 120px;
+        max-height: 100px;
       }
     }
   </style>
@@ -692,8 +721,8 @@
           <span class="live-indicator"></span>
           LIVE FOOTBALL MATCHES
         </div>
-        <button id="refresh-matches-btn" class="btn" style="padding: 6px 12px; font-size: 12px;">
-          🔄 Refresh
+        <button id="refresh-matches-btn" class="btn" style="padding: 4px 8px; font-size: 10px;">
+          🔄
         </button>
       </div>
       <div id="live-matches">
@@ -895,7 +924,9 @@ const state = {
   currentFilter: 'all',
   liveMatches: [],
   currentMatchCard: null,
-  liveMatchesRefreshTimer: null
+  liveMatchesRefreshTimer: null,
+  currentMatch: null,
+  currentStreamIndex: 0
 };
 
 const utils = {
@@ -1022,7 +1053,7 @@ const player = {
     utils.showToast(`⚡ Now playing: ${channelName}`);
   },
 
-  playMatch(match) {
+  playMatch(match, streamIndex = 0) {
     this.showLoading();
     reconnect.reset();
 
@@ -1041,18 +1072,21 @@ const player = {
     }
 
     state.currentChannelId = null;
+    state.currentMatch = match;
+    state.currentStreamIndex = streamIndex;
     
     const matchTitle = `${match.teams.home.name} vs ${match.teams.away.name}`;
-    elements.currentChannelDiv.textContent = `⚽ ${matchTitle}`;
+    const stream = match.streams[streamIndex];
+    const streamInfo = stream ? ` (${stream.quality || 'HD'} - ${stream.language || 'EN'})` : '';
+    elements.currentChannelDiv.textContent = `⚽ ${matchTitle}${streamInfo}`;
 
-    // Use the first available stream
-    if (match.streams && match.streams.length > 0) {
-      const stream = match.streams[0];
+    // Use the selected stream
+    if (match.streams && match.streams.length > streamIndex) {
       elements.player.src = stream.url;
-      utils.showToast(`⚽ Now watching: ${matchTitle}`);
+      utils.showToast(`⚽ Now watching: ${matchTitle}${streamInfo}`);
     } else {
       this.showError();
-      utils.showToast("No streams available for this match");
+      utils.showToast("Stream not available");
     }
   },
 
@@ -1157,6 +1191,22 @@ const liveMatches = {
     const statusText = match.currentMinute || 'LIVE';
     const streamsCount = match.streams ? match.streams.length : 0;
     
+    // Create streams HTML
+    let streamsHTML = '';
+    if (match.streams && match.streams.length > 0) {
+      streamsHTML = '<div class="match-streams">';
+      match.streams.forEach((stream, index) => {
+        const quality = stream.quality || 'HD';
+        const language = stream.language || 'EN';
+        streamsHTML += `
+          <button class="stream-btn" data-stream-index="${index}" title="${quality} - ${language}">
+            <span class="stream-quality">${quality}</span> ${language}
+          </button>
+        `;
+      });
+      streamsHTML += '</div>';
+    }
+    
     card.innerHTML = `
       <div class="match-header">
         <div class="match-league">${match.league}</div>
@@ -1175,18 +1225,25 @@ const liveMatches = {
           <span class="team-score">${match.scores?.away ?? '-'}</span>
         </div>
       </div>
-      <div class="match-streams-count">
-        📡 ${streamsCount} stream${streamsCount !== 1 ? 's' : ''} available
-      </div>
+      ${streamsHTML}
     `;
     
-    card.addEventListener('click', () => {
-      if (match.streams && match.streams.length > 0) {
-        player.playMatch(match);
-      } else {
-        utils.showToast('No streams available for this match');
-      }
-    });
+    // Add click handlers for stream buttons
+    if (match.streams && match.streams.length > 0) {
+      const streamBtns = card.querySelectorAll('.stream-btn');
+      streamBtns.forEach((btn, index) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          
+          // Remove active class from all stream buttons in this card
+          streamBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          // Play the selected stream
+          player.playMatch(match, index);
+        });
+      });
+    }
     
     return card;
   },
