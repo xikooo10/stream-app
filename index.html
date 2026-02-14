@@ -1460,15 +1460,6 @@ const liveMatches = {
     });
     
     console.log(`🔍 Filtered to ${filtered.length} matches for term: ${searchTerm}`);
-  }
-};
-
-  renderError() {
-    elements.liveMatchesDiv.innerHTML = `
-      <div class="no-matches">
-        ⚠️ Unable to load live matches. Please try refreshing.
-      </div>
-    `;
   },
 
   startAutoRefresh() {
