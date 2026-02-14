@@ -939,7 +939,7 @@ const CONFIG = {
   LOADING_TIMEOUT: 3000,
   RECONNECT_MAX_ATTEMPTS: 3,
   RECONNECT_DELAY: 5000,
-  LIVE_MATCHES_REFRESH_INTERVAL: 30000 // Refresh every 30 seconds
+  LIVE_MATCHES_REFRESH_INTERVAL: 15000 // Refresh every 15 seconds for aggressive updates
 };
 
 // We'll fetch popular leagues from the API instead of hardcoding
@@ -1307,21 +1307,42 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching live popular football matches...');
+      const currentTime = new Date();
+      console.log('🔄 Fetching live popular football matches at:', currentTime.toLocaleTimeString());
       
-      // Use the popular/live endpoint to get only live popular matches
-      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular/live`);
+      // Add cache-busting parameter to ensure fresh data
+      const cacheBuster = `?_t=${Date.now()}`;
+      const url = `${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular/live${cacheBuster}`;
+      
+      console.log('📡 Fetching from:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      const currentTime = new Date();
-      console.log('✅ Received live popular matches:', data.length, 'at', currentTime.toLocaleTimeString());
+      console.log('✅ Received', data.length, 'matches at', new Date().toLocaleTimeString());
       
       if (data.length > 0) {
-        console.log('Sample match:', data[0]);
+        console.log('📋 Sample match data:', {
+          league: data[0].league,
+          home: data[0].teams?.home?.name,
+          away: data[0].teams?.away?.name,
+          minute: data[0].currentMinute,
+          timestamp: data[0].timestamp,
+          streams: data[0].streams?.length || 0
+        });
+      } else {
+        console.warn('⚠️ No live matches returned from API');
       }
       
       // Preserve existing match data to maintain start times
@@ -1348,7 +1369,23 @@ const liveMatches = {
         return a.timestamp - b.timestamp;
       });
       
-      console.log('🎯 Showing live popular matches:', sortedMatches.length);
+      // Log what changed
+      const oldMatchIds = new Set(state.liveMatches.map(m => m.matchId));
+      const newMatchIds = new Set(sortedMatches.map(m => m.matchId));
+      const added = sortedMatches.filter(m => !oldMatchIds.has(m.matchId));
+      const removed = state.liveMatches.filter(m => !newMatchIds.has(m.matchId));
+      
+      if (added.length > 0) {
+        console.log('➕ New matches added:', added.map(m => `${m.teams.home.name} vs ${m.teams.away.name}`));
+      }
+      if (removed.length > 0) {
+        console.log('➖ Matches removed:', removed.map(m => `${m.teams.home.name} vs ${m.teams.away.name}`));
+      }
+      if (added.length === 0 && removed.length === 0 && sortedMatches.length > 0) {
+        console.log('🔄 Match list unchanged');
+      }
+      
+      console.log('🎯 Total live matches:', sortedMatches.length);
       
       // Update live count in UI
       const liveCountSpan = document.querySelector('.live-count');
@@ -1585,7 +1622,7 @@ const liveMatches = {
       this.fetchLiveMatches();
     }, CONFIG.LIVE_MATCHES_REFRESH_INTERVAL);
     
-    console.log('✅ Auto-refresh enabled (every 30s)');
+    console.log('✅ Auto-refresh enabled (every 15s)');
   },
 
   stopAutoRefresh() {
@@ -1780,7 +1817,10 @@ async function init() {
   elements.logoutBtn.addEventListener("click", handlers.logout);
   elements.refreshMatchesBtn.addEventListener("click", () => {
     utils.showToast("🔄 Refreshing matches...");
-    liveMatches.fetchLiveMatches();
+    liveMatches.fetchLiveMatches().then(() => {
+      const now = new Date().toLocaleTimeString();
+      utils.showToast(`✅ Updated at ${now}`, 2000);
+    });
   });
   document.addEventListener("keydown", handlers.keyboard);
 
