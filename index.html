@@ -329,7 +329,7 @@
 
     .match-team {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       font-size: 11px;
       font-weight: 600;
@@ -340,15 +340,6 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      margin-right: 6px;
-    }
-
-    .team-score {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--accent-primary);
-      min-width: 20px;
-      text-align: right;
     }
 
     .match-stream-selector {
@@ -1414,31 +1405,47 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    // Always show LIVE badge (no minutes)
-    const homeScore = match.scores?.home ?? 0;
-    const awayScore = match.scores?.away ?? 0;
-    
-    // Simple LIVE badge
+    // Simple LIVE badge (no scores shown)
     const timeBadge = `<div class="match-time-badge">LIVE</div>`;
     
-    // Filter streams: HD quality and only English/Portuguese languages
+    // Filter streams: HD/HD+ quality and ONLY English/Portuguese languages
     const hdStreams = match.streams ? match.streams.filter(stream => {
-      const quality = (stream.quality || '').toLowerCase();
-      const language = (stream.language || '').toLowerCase();
+      const quality = (stream.quality || '').toLowerCase().trim();
+      const language = (stream.language || '').toLowerCase().trim();
       
-      // Check if HD quality (not SD or low)
-      const isHD = quality !== 'sd' && quality !== 'low';
+      // Must be HD or HD+ or FHD (not SD or low)
+      const isHD = 
+        quality.includes('hd') || 
+        quality.includes('fhd') ||
+        quality === 'high' ||
+        quality === '';  // Sometimes HD streams have empty quality
       
-      // Check if English or Portuguese
-      const isEnglishOrPortuguese = 
-        language.includes('en') || 
-        language.includes('english') || 
-        language.includes('pt') || 
+      const notSD = !quality.includes('sd') && !quality.includes('low');
+      
+      // STRICT: Only English or Portuguese
+      const isEnglish = 
+        language === 'en' || 
+        language === 'english' || 
+        language === 'eng' ||
+        language.startsWith('en-') ||
+        language.includes('english');
+        
+      const isPortuguese = 
+        language === 'pt' || 
+        language === 'por' ||
+        language === 'portuguese' || 
+        language.startsWith('pt-') ||
         language.includes('portuguese') ||
-        language.includes('por');
+        language.includes('portugues');
       
-      return isHD && isEnglishOrPortuguese;
+      return (isHD && notSD) && (isEnglish || isPortuguese);
     }) : [];
+    
+    // Log filtered streams for debugging
+    if (match.streams && match.streams.length > 0 && hdStreams.length === 0) {
+      console.log(`⚠️ No EN/PT HD streams for ${match.teams.home.name} vs ${match.teams.away.name}`);
+      console.log('Available streams:', match.streams.map(s => `${s.quality}-${s.language}`));
+    }
     
     // Create streams selector (dropdown style like channels)
     let streamsHTML = '';
@@ -1455,7 +1462,7 @@ const liveMatches = {
         </select>
       `;
     } else {
-      streamsHTML = '<div class="no-streams-msg">No streams available</div>';
+      streamsHTML = '<div class="no-streams-msg">No EN/PT HD streams</div>';
     }
     
     card.innerHTML = `
@@ -1466,11 +1473,9 @@ const liveMatches = {
       <div class="match-teams">
         <div class="match-team">
           <span class="team-name">${match.teams.home.name}</span>
-          <span class="team-score">${homeScore}</span>
         </div>
         <div class="match-team">
           <span class="team-name">${match.teams.away.name}</span>
-          <span class="team-score">${awayScore}</span>
         </div>
       </div>
       <div class="match-stream-selector">
