@@ -256,35 +256,18 @@
       box-shadow: 0 0 20px rgba(181, 255, 0, 0.4);
     }
 
-    .match-card.upcoming {
-      opacity: 0.9;
-      border-color: #2a2a2a;
-    }
-
-    .match-card.upcoming:hover {
-      opacity: 1;
-    }
-
     .match-time-badge {
       position: absolute;
       top: 8px;
       left: 8px;
-      background: rgba(0, 0, 0, 0.8);
+      background: var(--live-indicator);
+      color: #fff;
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 11px;
       font-weight: 700;
       z-index: 1;
-    }
-
-    .match-time-badge.live {
-      background: var(--live-indicator);
-      color: #fff;
-    }
-
-    .match-time-badge.upcoming {
-      background: rgba(0, 0, 0, 0.9);
-      color: var(--accent-primary);
+      box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
     }
 
     .match-header {
@@ -760,8 +743,8 @@
         <input 
           type="search" 
           id="search-box" 
-          placeholder="🔍 Search channels..." 
-          aria-label="Search channels"
+          placeholder="🔍 Search teams, channels..." 
+          aria-label="Search teams and channels"
         >
         <button id="refresh-btn" class="btn" title="Refresh stream (R)" aria-label="Refresh stream">
           🔄 Refresh
@@ -781,17 +764,27 @@
     <div id="live-matches-section">
       <div class="section-header">
         <div class="section-title">
-          ⚽ Popular Football <span class="live-count">Live (0)</span>
+          🔴 LIVE MATCHES <span class="live-count">Live (0)</span>
         </div>
-        <button id="refresh-matches-btn" class="btn" style="padding: 4px 8px; font-size: 10px;">
+        <button id="refresh-matches-btn" class="btn" style="padding: 4px 8px; font-size: 10px;" title="Refresh live matches">
           🔄
         </button>
       </div>
       <div id="live-matches">
         <div class="loading-matches">
           <div class="spinner" style="width: 40px; height: 40px; margin: 10px auto;"></div>
-          Loading matches...
+          Loading live matches...
         </div>
+      </div>
+    </div>
+
+    <!-- Section Divider -->
+    <div style="border-top: 1px solid var(--border-color); margin: 12px 0;"></div>
+
+    <!-- Channels Section Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">
+        📺 TV CHANNELS
       </div>
     </div>
 
@@ -1288,37 +1281,37 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching today\'s popular football matches...');
+      console.log('🔄 Fetching live popular football matches...');
       
-      // Fetch popular matches for today - the API returns today's matches by default
-      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular`);
+      // Use the popular/live endpoint to get only live popular matches
+      const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular/live`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('✅ Received matches:', data.length);
-      console.log('Sample match data:', data[0]);
+      console.log('✅ Received live popular matches:', data.length);
       
-      // The API already returns today's matches, just sort them by timestamp
-      const sortedMatches = data.sort((a, b) => a.timestamp - b.timestamp);
+      if (data.length > 0) {
+        console.log('Sample match:', data[0]);
+      }
       
-      console.log('🎯 Showing popular matches sorted by time:', sortedMatches.length);
+      // Sort by league name for better organization
+      const sortedMatches = data.sort((a, b) => {
+        // First sort by league
+        if (a.league < b.league) return -1;
+        if (a.league > b.league) return 1;
+        // Then by timestamp
+        return a.timestamp - b.timestamp;
+      });
       
-      // Count live matches - check status more carefully
-      const liveCount = sortedMatches.filter(m => {
-        const status = m.status?.toLowerCase() || '';
-        const hasCurrentMinute = m.currentMinute && m.currentMinute !== '0';
-        return status === 'in' || status === 'live' || hasCurrentMinute;
-      }).length;
-      
-      console.log('🔴 Live matches count:', liveCount);
+      console.log('🎯 Showing live popular matches:', sortedMatches.length);
       
       // Update live count in UI
       const liveCountSpan = document.querySelector('.live-count');
       if (liveCountSpan) {
-        liveCountSpan.textContent = `Live (${liveCount})`;
+        liveCountSpan.textContent = `Live (${sortedMatches.length})`;
       }
       
       state.liveMatches = sortedMatches;
@@ -1337,34 +1330,17 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    // Better live status detection
-    const status = match.status?.toLowerCase() || '';
-    const currentMinute = match.currentMinute;
-    const currentMinuteNumber = match.currentMinuteNumber;
+    // Get match status
+    const currentMinute = match.currentMinute || 'LIVE';
+    const homeScore = match.scores?.home ?? 0;
+    const awayScore = match.scores?.away ?? 0;
     
-    // A match is live if status is 'in' or 'live', OR if it has a valid current minute > 0
-    const isLive = status === 'in' || status === 'live' || (currentMinuteNumber && currentMinuteNumber > 0);
-    
-    console.log(`Match: ${match.title}, Status: ${status}, Minute: ${currentMinute}, isLive: ${isLive}`);
-    
-    // Add upcoming class if not live
-    if (!isLive) {
-      card.classList.add('upcoming');
-    }
-    
-    // Time badge at top
-    let timeBadge = '';
-    if (isLive) {
-      const minute = currentMinute || 'LIVE';
-      timeBadge = `<div class="match-time-badge live">${minute}'</div>`;
-    } else {
-      const matchTime = utils.formatLisbonTime(match.timestamp);
-      timeBadge = `<div class="match-time-badge upcoming">${matchTime}</div>`;
-    }
+    // Time badge - always show as live since we only fetch live matches
+    const timeBadge = `<div class="match-time-badge">${currentMinute}'</div>`;
     
     // Create streams HTML
     let streamsHTML = '';
-    if (match.streams && match.streams.length > 0 && isLive) {
+    if (match.streams && match.streams.length > 0) {
       streamsHTML = '<div class="match-streams">';
       match.streams.forEach((stream, index) => {
         const quality = stream.quality || 'HD';
@@ -1376,14 +1352,9 @@ const liveMatches = {
         `;
       });
       streamsHTML += '</div>';
-    } else if (!isLive) {
-      streamsHTML = '<div class="match-streams"><div class="no-streams-msg">⏰ Not started yet</div></div>';
     } else {
-      streamsHTML = '<div class="match-streams"><div class="no-streams-msg">No streams available</div></div>';
+      streamsHTML = '<div class="match-streams"><div class="no-streams-msg">No streams</div></div>';
     }
-    
-    // Show scores for live matches or matches with scores
-    const showScores = isLive || (match.scores && (match.scores.home > 0 || match.scores.away > 0));
     
     card.innerHTML = `
       ${timeBadge}
@@ -1393,25 +1364,25 @@ const liveMatches = {
       <div class="match-teams">
         <div class="match-team">
           <span class="team-name">${match.teams.home.name}</span>
-          <span class="team-score">${showScores ? (match.scores?.home ?? 0) : '-'}</span>
+          <span class="team-score">${homeScore}</span>
         </div>
         <div class="match-team">
           <span class="team-name">${match.teams.away.name}</span>
-          <span class="team-score">${showScores ? (match.scores?.away ?? 0) : '-'}</span>
+          <span class="team-score">${awayScore}</span>
         </div>
       </div>
       ${streamsHTML}
     `;
     
-    // Add click handlers for stream buttons (only for live matches)
-    if (match.streams && match.streams.length > 0 && isLive) {
+    // Add click handlers for stream buttons
+    if (match.streams && match.streams.length > 0) {
       const streamBtns = card.querySelectorAll('.stream-btn');
       streamBtns.forEach((btn, index) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           
-          // Remove active class from all stream buttons in this card
-          streamBtns.forEach(b => b.classList.remove('active'));
+          // Remove active class from all stream buttons
+          document.querySelectorAll('.stream-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           
           // Play the selected stream
@@ -1429,7 +1400,7 @@ const liveMatches = {
     if (state.liveMatches.length === 0) {
       elements.liveMatchesDiv.innerHTML = `
         <div class="no-matches">
-          ⚽ No popular matches available right now. Try refreshing in a few moments.
+          ⚽ No live popular matches at the moment
         </div>
       `;
       return;
@@ -1440,7 +1411,7 @@ const liveMatches = {
       elements.liveMatchesDiv.appendChild(card);
     });
     
-    console.log('✅ Rendered', state.liveMatches.length, 'match cards');
+    console.log('✅ Rendered', state.liveMatches.length, 'live match cards');
   },
 
   renderError() {
@@ -1450,6 +1421,47 @@ const liveMatches = {
       </div>
     `;
   },
+
+  filter(searchTerm) {
+    const term = searchTerm.toLowerCase().trim();
+    
+    if (!term) {
+      // Show all matches if search is empty
+      this.render();
+      return;
+    }
+    
+    // Filter matches by team name or league
+    const filtered = state.liveMatches.filter(match => {
+      const homeTeam = match.teams.home.name.toLowerCase();
+      const awayTeam = match.teams.away.name.toLowerCase();
+      const league = match.league.toLowerCase();
+      
+      return homeTeam.includes(term) || 
+             awayTeam.includes(term) || 
+             league.includes(term);
+    });
+    
+    // Render filtered matches
+    elements.liveMatchesDiv.innerHTML = '';
+    
+    if (filtered.length === 0) {
+      elements.liveMatchesDiv.innerHTML = `
+        <div class="no-matches">
+          🔍 No matches found for "${searchTerm}"
+        </div>
+      `;
+      return;
+    }
+    
+    filtered.forEach(match => {
+      const card = this.createMatchCard(match);
+      elements.liveMatchesDiv.appendChild(card);
+    });
+    
+    console.log(`🔍 Filtered to ${filtered.length} matches for term: ${searchTerm}`);
+  }
+};
 
   renderError() {
     elements.liveMatchesDiv.innerHTML = `
@@ -1649,7 +1661,12 @@ async function init() {
 
   // Event listeners
   elements.searchBox.addEventListener("input", 
-    utils.debounce((e) => channelManager.filter(e.target.value), CONFIG.DEBOUNCE_DELAY)
+    utils.debounce((e) => {
+      const searchTerm = e.target.value;
+      // Search both channels and live matches
+      channelManager.filter(searchTerm);
+      liveMatches.filter(searchTerm);
+    }, CONFIG.DEBOUNCE_DELAY)
   );
   elements.refreshBtn.addEventListener("click", () => player.refresh());
   elements.fullscreenBtn.addEventListener("click", () => player.toggleFullscreen());
