@@ -1288,8 +1288,9 @@ const player = {
 const liveMatches = {
   async fetchLiveMatches() {
     try {
-      console.log('🔄 Fetching popular football matches...');
-      // Fetch all popular matches
+      console.log('🔄 Fetching today\'s popular football matches...');
+      
+      // Fetch popular matches for today - the API returns today's matches by default
       const response = await fetch(`${CONFIG.WATCHFOOTY_API_BASE}/matches/football/popular`);
       
       if (!response.ok) {
@@ -1297,28 +1298,22 @@ const liveMatches = {
       }
       
       const data = await response.json();
-      console.log('✅ Received popular matches:', data.length);
+      console.log('✅ Received matches:', data.length);
+      console.log('Sample match data:', data[0]);
       
-      // Filter for today's matches only
-      const now = new Date();
-      const todayStart = new Date(now.setHours(0, 0, 0, 0));
-      const todayEnd = new Date(now.setHours(23, 59, 59, 999));
+      // The API already returns today's matches, just sort them by timestamp
+      const sortedMatches = data.sort((a, b) => a.timestamp - b.timestamp);
       
-      const todayMatches = data.filter(match => {
-        const matchDate = new Date(match.timestamp * 1000);
-        return matchDate >= todayStart && matchDate <= todayEnd;
-      });
+      console.log('🎯 Showing popular matches sorted by time:', sortedMatches.length);
       
-      // Sort matches by timestamp (earliest first)
-      const sortedMatches = todayMatches.sort((a, b) => a.timestamp - b.timestamp);
-      
-      console.log('🎯 Showing today\'s popular matches sorted by time:', sortedMatches.length);
-      
-      // Count live matches
+      // Count live matches - check status more carefully
       const liveCount = sortedMatches.filter(m => {
         const status = m.status?.toLowerCase() || '';
-        return status === 'in' || status === 'live';
+        const hasCurrentMinute = m.currentMinute && m.currentMinute !== '0';
+        return status === 'in' || status === 'live' || hasCurrentMinute;
       }).length;
+      
+      console.log('🔴 Live matches count:', liveCount);
       
       // Update live count in UI
       const liveCountSpan = document.querySelector('.live-count');
@@ -1342,10 +1337,15 @@ const liveMatches = {
     card.className = 'match-card';
     card.dataset.matchId = match.matchId;
     
-    // Determine match status more accurately
+    // Better live status detection
     const status = match.status?.toLowerCase() || '';
-    const isLive = status === 'in' || status === 'live';
-    const hasStarted = match.scores && (match.scores.home > 0 || match.scores.away > 0);
+    const currentMinute = match.currentMinute;
+    const currentMinuteNumber = match.currentMinuteNumber;
+    
+    // A match is live if status is 'in' or 'live', OR if it has a valid current minute > 0
+    const isLive = status === 'in' || status === 'live' || (currentMinuteNumber && currentMinuteNumber > 0);
+    
+    console.log(`Match: ${match.title}, Status: ${status}, Minute: ${currentMinute}, isLive: ${isLive}`);
     
     // Add upcoming class if not live
     if (!isLive) {
@@ -1355,7 +1355,7 @@ const liveMatches = {
     // Time badge at top
     let timeBadge = '';
     if (isLive) {
-      const minute = match.currentMinute || 'LIVE';
+      const minute = currentMinute || 'LIVE';
       timeBadge = `<div class="match-time-badge live">${minute}'</div>`;
     } else {
       const matchTime = utils.formatLisbonTime(match.timestamp);
@@ -1382,6 +1382,9 @@ const liveMatches = {
       streamsHTML = '<div class="match-streams"><div class="no-streams-msg">No streams available</div></div>';
     }
     
+    // Show scores for live matches or matches with scores
+    const showScores = isLive || (match.scores && (match.scores.home > 0 || match.scores.away > 0));
+    
     card.innerHTML = `
       ${timeBadge}
       <div class="match-header">
@@ -1390,11 +1393,11 @@ const liveMatches = {
       <div class="match-teams">
         <div class="match-team">
           <span class="team-name">${match.teams.home.name}</span>
-          <span class="team-score">${isLive || hasStarted ? (match.scores?.home ?? 0) : '-'}</span>
+          <span class="team-score">${showScores ? (match.scores?.home ?? 0) : '-'}</span>
         </div>
         <div class="match-team">
           <span class="team-name">${match.teams.away.name}</span>
-          <span class="team-score">${isLive || hasStarted ? (match.scores?.away ?? 0) : '-'}</span>
+          <span class="team-score">${showScores ? (match.scores?.away ?? 0) : '-'}</span>
         </div>
       </div>
       ${streamsHTML}
@@ -1426,7 +1429,7 @@ const liveMatches = {
     if (state.liveMatches.length === 0) {
       elements.liveMatchesDiv.innerHTML = `
         <div class="no-matches">
-          ⚽ No popular matches today
+          ⚽ No popular matches available right now. Try refreshing in a few moments.
         </div>
       `;
       return;
@@ -1438,6 +1441,14 @@ const liveMatches = {
     });
     
     console.log('✅ Rendered', state.liveMatches.length, 'match cards');
+  },
+
+  renderError() {
+    elements.liveMatchesDiv.innerHTML = `
+      <div class="no-matches">
+        ⚠️ Unable to load matches. Please check your connection and try refreshing.
+      </div>
+    `;
   },
 
   renderError() {
