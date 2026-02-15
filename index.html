@@ -588,12 +588,6 @@
       padding: 20px;
     }
 
-    .reconnect-info {
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
     .toast {
       position: fixed;
       bottom: 20px;
@@ -811,17 +805,11 @@
       <p style="font-size: 40px; margin: 0;" aria-hidden="true">⚠️</p>
       <p style="margin: 10px 0;">Stream unavailable</p>
       <small>Try another channel or refresh</small>
-      <div class="reconnect-info" id="reconnect-info"></div>
     </div>
     <iframe 
       id="player" 
       allowfullscreen 
-      webkitallowfullscreen
-      mozallowfullscreen
-      allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope; clipboard-write"
-      frameborder="0"
-      scrolling="no"
-      loading="lazy"
+      allow="autoplay; fullscreen"
       title="Stream player"
     ></iframe>
     
@@ -838,76 +826,6 @@
 <script>
 'use strict';
 
-// ========== STREAMLINED AD PROTECTION (NON-INTERFERING) ==========
-(function() {
-  console.log('🛡️ Initializing protection...');
-  
-  // Block window.open
-  window.open = function() {
-    console.warn('🚫 Blocked window.open');
-    return null;
-  };
-  
-  // Block window.opener
-  try {
-    Object.defineProperty(window, 'opener', {
-      get: () => null,
-      set: () => {},
-      configurable: false
-    });
-  } catch(e) {}
-  
-  // Block popunders
-  let lastBlur = 0;
-  window.addEventListener('blur', function() {
-    const now = Date.now();
-    if (now - lastBlur < 1000) {
-      setTimeout(() => window.focus(), 1);
-    }
-    lastBlur = now;
-  });
-  
-  // Block suspicious external links
-  document.addEventListener('click', function(e) {
-    const anchor = e.target.closest('a');
-    if (anchor && anchor.href) {
-      const href = anchor.href;
-      if (href.startsWith('http') && !href.includes(window.location.hostname)) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.warn('🚫 Blocked external link:', href);
-        return false;
-      }
-    }
-  }, true);
-  
-  // Block context menu on iframe
-  document.addEventListener('contextmenu', function(e) {
-    if (e.target.tagName === 'IFRAME') {
-      e.preventDefault();
-      return false;
-    }
-  });
-  
-  // Monitor for injected iframes
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      mutation.addedNodes.forEach(function(node) {
-        if (node.tagName === 'IFRAME' && node.id !== 'player') {
-          node.remove();
-          console.warn('🚫 Removed injected iframe');
-        }
-      });
-    });
-  });
-  
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-  
-  console.log('✅ Protection active');
-})();
-
 // ========== MAIN APPLICATION ==========
 const CONFIG = {
   LAST_CHANNEL_KEY: 'lastChannel',
@@ -915,8 +833,6 @@ const CONFIG = {
   WATCHFOOTY_API_BASE: 'https://api.watchfooty.st/api/v1',
   DEBOUNCE_DELAY: 300,
   LOADING_TIMEOUT: 3000,
-  RECONNECT_MAX_ATTEMPTS: 3,
-  RECONNECT_DELAY: 5000,
   LIVE_MATCHES_REFRESH_INTERVAL: 15000 // Refresh every 15 seconds for aggressive updates
 };
 
@@ -947,7 +863,6 @@ const elements = {
   player: document.getElementById("player"),
   loading: document.getElementById("loading"),
   errorMsg: document.getElementById("error-msg"),
-  reconnectInfo: document.getElementById("reconnect-info"),
   fullscreenBtn: document.getElementById("fullscreen-btn"),
   refreshBtn: document.getElementById("refresh-btn"),
   toast: document.getElementById("toast"),
@@ -1116,33 +1031,6 @@ const utils = {
   }
 };
 
-const reconnect = {
-  attempts: 0,
-  timer: null,
-  
-  start() {
-    if (this.attempts >= CONFIG.RECONNECT_MAX_ATTEMPTS) {
-      player.showError();
-      elements.reconnectInfo.textContent = `Failed after ${CONFIG.RECONNECT_MAX_ATTEMPTS} attempts`;
-      return;
-    }
-    
-    this.attempts++;
-    elements.reconnectInfo.textContent = `Reconnecting... (${this.attempts}/${CONFIG.RECONNECT_MAX_ATTEMPTS})`;
-    utils.showToast(`Reconnecting... (${this.attempts}/${CONFIG.RECONNECT_MAX_ATTEMPTS})`, 3000);
-    
-    this.timer = setTimeout(() => {
-      player.refresh();
-    }, CONFIG.RECONNECT_DELAY);
-  },
-  
-  reset() {
-    this.attempts = 0;
-    clearTimeout(this.timer);
-    elements.reconnectInfo.textContent = '';
-  }
-};
-
 const player = {
   showLoading() {
     elements.loading.classList.add("show");
@@ -1166,7 +1054,6 @@ const player = {
 
   play(id, wrapper, channelName) {
     this.showLoading();
-    reconnect.reset();
 
     if (state.currentButton) {
       state.currentButton.classList.remove("active");
@@ -1195,7 +1082,6 @@ const player = {
 
   playMatch(match, streamIndex = 0) {
     this.showLoading();
-    reconnect.reset();
 
     if (state.currentButton) {
       state.currentButton.classList.remove("active");
@@ -1863,14 +1749,9 @@ async function init() {
     }
   });
 
-  // Iframe events
+  // Iframe events - simple load handling
   elements.player.addEventListener("load", () => {
     player.hideLoading();
-    reconnect.reset();
-  });
-
-  elements.player.addEventListener("error", () => {
-    reconnect.start();
   });
   
   // iOS manual fullscreen exit on double-tap
