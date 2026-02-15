@@ -521,6 +521,45 @@
       border: none;
     }
 
+    /* Fullscreen mode for iframe - ensure it fills entire screen */
+    iframe:fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      object-fit: contain;
+    }
+
+    /* Vendor prefixes for fullscreen */
+    iframe:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    iframe:-moz-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    iframe:-ms-fullscreen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
     .overlay-message {
       position: absolute;
       top: 50%;
@@ -1286,15 +1325,39 @@ const player = {
   },
 
   toggleFullscreen() {
-    const container = document.getElementById("player-container");
+    const iframe = document.getElementById("player");
     
-    if (!document.fullscreenElement) {
-      container.requestFullscreen().catch(err => {
-        utils.showToast("Fullscreen not available");
-      });
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
+      // Enter fullscreen with vendor prefixes for mobile support
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen().catch(err => {
+          console.error("Fullscreen error:", err);
+          utils.showToast("Fullscreen not available");
+        });
+      } else if (iframe.webkitRequestFullscreen) {
+        // Safari/iOS
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.mozRequestFullScreen) {
+        // Firefox
+        iframe.mozRequestFullScreen();
+      } else if (iframe.msRequestFullscreen) {
+        // IE/Edge
+        iframe.msRequestFullscreen();
+      } else {
+        utils.showToast("Fullscreen not supported");
+      }
       elements.fullscreenBtn.textContent = "⛶ Exit";
     } else {
-      document.exitFullscreen();
+      // Exit fullscreen with vendor prefixes
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
       elements.fullscreenBtn.textContent = "⛶ Full";
     }
   }
@@ -1724,8 +1787,16 @@ const handlers = {
         player.refresh();
         break;
       case "Escape":
-        if (document.fullscreenElement) {
-          document.exitFullscreen();
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
         }
         break;
     }
@@ -1805,6 +1876,31 @@ async function init() {
   });
   document.addEventListener("keydown", handlers.keyboard);
 
+  // Fullscreen change listeners for all browsers
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement) {
+      elements.fullscreenBtn.textContent = "⛶ Exit";
+    } else {
+      elements.fullscreenBtn.textContent = "⛶ Full";
+    }
+  });
+  
+  document.addEventListener('webkitfullscreenchange', () => {
+    if (document.webkitFullscreenElement) {
+      elements.fullscreenBtn.textContent = "⛶ Exit";
+    } else {
+      elements.fullscreenBtn.textContent = "⛶ Full";
+    }
+  });
+  
+  document.addEventListener('mozfullscreenchange', () => {
+    if (document.mozFullScreenElement) {
+      elements.fullscreenBtn.textContent = "⛶ Exit";
+    } else {
+      elements.fullscreenBtn.textContent = "⛶ Full";
+    }
+  });
+
   // Iframe events
   elements.player.addEventListener("load", () => {
     player.hideLoading();
@@ -1832,4 +1928,3 @@ if (document.readyState === 'loading') {
 
 </body>
 </html>
-
