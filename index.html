@@ -521,20 +521,6 @@
       border: none;
     }
 
-    /* Fullscreen mode for iframe */
-    iframe:fullscreen,
-    iframe:-webkit-full-screen,
-    iframe:-moz-full-screen,
-    iframe:-ms-fullscreen {
-      width: 100vw !important;
-      height: 100vh !important;
-      max-width: 100vw !important;
-      max-height: 100vh !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      object-fit: contain;
-    }
-
     /* Manual fullscreen mode for iOS - hide header */
     body.manual-fullscreen #header {
       display: none;
@@ -809,10 +795,8 @@
     <iframe 
       id="player" 
       allowfullscreen 
-      webkitallowfullscreen
-      mozallowfullscreen
+      loading="lazy"
       title="Stream player"
-      style="border: 0;"
     ></iframe>
     
     <!-- Controls removed to prevent conflict with embedded stream controls -->
@@ -821,7 +805,8 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="shortcut-hint" class="shortcut-hint" aria-hidden="true">
-  Press F for fullscreen • ← → to switch channels • R to refresh
+  Press F for fullscreen • ← → to switch channels • R to refresh<br>
+  <small style="opacity: 0.7;">Mobile: Use embedded player controls for fullscreen</small>
 </div>
 
 <script>
