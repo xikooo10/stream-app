@@ -336,7 +336,15 @@
   </header>
 
   <main id="player-container">
-    <iframe id="player" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    <iframe 
+      id="player" 
+      allowfullscreen 
+      webkitallowfullscreen 
+      mozallowfullscreen 
+      msallowfullscreen
+      allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *; geolocation *; microphone *; camera *"
+      sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
+    ></iframe>
   </main>
 </div>
 
