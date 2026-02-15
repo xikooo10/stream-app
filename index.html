@@ -568,12 +568,13 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       color: var(--accent-primary);
       padding: 20px 30px;
       border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
+      border: 2px solid var(--accent-primary);
+      font-size: 15px;
+      font-weight: 700;
       text-align: center;
       z-index: 15;
       opacity: 0;
@@ -581,6 +582,7 @@
       pointer-events: none;
       max-width: 80%;
       line-height: 1.6;
+      box-shadow: 0 4px 20px rgba(181, 255, 0, 0.4);
     }
     
     .mobile-hint.show {
@@ -589,8 +591,8 @@
     
     @media (max-width: 768px) {
       .mobile-hint {
-        font-size: 13px;
-        padding: 16px 24px;
+        font-size: 14px;
+        padding: 18px 26px;
       }
     }
 
@@ -914,7 +916,7 @@
       allowfullscreen 
       webkitallowfullscreen
       mozallowfullscreen
-      allow="autoplay; fullscreen"
+      allow="fullscreen"
       title="Stream player"
     ></iframe>
     
@@ -1292,9 +1294,23 @@ const player = {
     // Clear and reload iframe to reset fullscreen API
     elements.player.src = "";
     
+    // Detect iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    
     // Small delay to ensure iframe is cleared
     setTimeout(() => {
-      elements.player.src = utils.getStreamUrl(id, folder);
+      let streamUrl = utils.getStreamUrl(id, folder);
+      
+      // On iOS, try to prevent autoplay by adding parameters
+      // Note: This may not work as the embedded stream controls autoplay
+      if (isIOS) {
+        // Some streams respect these parameters
+        const separator = streamUrl.includes('?') ? '&' : '?';
+        streamUrl += `${separator}autoplay=0&muted=0`;
+        console.log('🍎 iOS detected - attempting to disable autoplay');
+      }
+      
+      elements.player.src = streamUrl;
       
       // Re-add fullscreen attributes after reload
       elements.player.setAttribute('allowfullscreen', '');
@@ -1304,10 +1320,16 @@ const player = {
       // Show mobile hint on mobile devices
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       if (isMobile && elements.mobileHint) {
+        // On iOS, show different hint since autoplay should be disabled
+        if (isIOS) {
+          elements.mobileHint.innerHTML = '▶️ Tap PLAY, then go fullscreen';
+        } else {
+          elements.mobileHint.innerHTML = '👆 Tap the video to enable fullscreen controls';
+        }
         elements.mobileHint.classList.add('show');
         setTimeout(() => {
           elements.mobileHint.classList.remove('show');
-        }, 4000);
+        }, 5000);
       }
     }, 50);
 
@@ -1347,9 +1369,21 @@ const player = {
       // Clear and reload iframe to reset fullscreen API
       elements.player.src = "";
       
+      // Detect iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      
       // Small delay to ensure iframe is cleared
       setTimeout(() => {
-        elements.player.src = stream.url;
+        let streamUrl = stream.url;
+        
+        // On iOS, try to prevent autoplay by adding parameters
+        if (isIOS) {
+          const separator = streamUrl.includes('?') ? '&' : '?';
+          streamUrl += `${separator}autoplay=0&muted=0`;
+          console.log('🍎 iOS detected - attempting to disable autoplay');
+        }
+        
+        elements.player.src = streamUrl;
         
         // Re-add fullscreen attributes after reload
         elements.player.setAttribute('allowfullscreen', '');
@@ -1359,10 +1393,16 @@ const player = {
         // Show mobile hint on mobile devices
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (isMobile && elements.mobileHint) {
+          // On iOS, show different hint since autoplay should be disabled
+          if (isIOS) {
+            elements.mobileHint.innerHTML = '▶️ Tap PLAY, then go fullscreen';
+          } else {
+            elements.mobileHint.innerHTML = '👆 Tap the video to enable fullscreen controls';
+          }
           elements.mobileHint.classList.add('show');
           setTimeout(() => {
             elements.mobileHint.classList.remove('show');
-          }, 4000);
+          }, 5000);
         }
       }, 50);
       
