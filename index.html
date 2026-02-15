@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>QuickPick Stream</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="description" content="QuickPick premium sports streaming platform">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preload" as="image" href="logo__1_.png">
@@ -39,6 +42,13 @@
       line-height: 1.5;
       margin: 0;
       padding: 0;
+      /* Mobile viewport height fix */
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+    }
+    
+    html {
+      height: -webkit-fill-available;
     }
 
     #header {
@@ -524,16 +534,32 @@
       bottom: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
+      height: calc(var(--vh, 1vh) * 100) !important;
+      max-height: -webkit-fill-available !important;
       z-index: 999999 !important;
       background: #000 !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
     #player-container.mobile-fullscreen #player {
       width: 100vw !important;
       height: 100vh !important;
+      height: calc(var(--vh, 1vh) * 100) !important;
+      max-height: -webkit-fill-available !important;
       position: absolute !important;
       top: 0 !important;
       left: 0 !important;
+      border: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* Hide everything except player in mobile fullscreen */
+    body.mobile-fullscreen-active #header,
+    body.mobile-fullscreen-active #toast,
+    body.mobile-fullscreen-active #shortcut-hint {
+      display: none !important;
     }
 
     iframe {
@@ -1067,7 +1093,9 @@ const state = {
   liveMatchesRefreshTimer: null,
   currentMatch: null,
   currentStreamIndex: 0,
-  isMobileFullscreen: false
+  isMobileFullscreen: false,
+  preventScrollListener: null,
+  vhUpdateListener: null
 };
 
 const utils = {
@@ -1429,33 +1457,129 @@ const player = {
   toggleMobileFullscreen() {
     if (!state.isMobileFullscreen) {
       // Enter mobile fullscreen
+      document.body.classList.add('mobile-fullscreen-active');
       elements.playerContainer.classList.add('mobile-fullscreen');
       elements.mobileExitFullscreen.classList.add('show');
       document.getElementById('header').style.display = 'none';
       state.isMobileFullscreen = true;
       elements.fullscreenBtn.textContent = "⛶ Exit";
-      utils.showToast("📱 Mobile fullscreen mode");
+      
+      // Prevent scrolling and zooming
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      document.documentElement.style.overflow = 'hidden';
+      
+      // Prevent touch move to stop scrolling
+      const preventScroll = (e) => {
+        e.preventDefault();
+      };
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      state.preventScrollListener = preventScroll;
+      
+      // Hide address bar and browser UI
+      this.hideAddressBar();
+      
+      // Try native fullscreen API (this will hide browser UI if successful)
+      const fullscreenPromise = document.documentElement.requestFullscreen?.() ||
+                               document.documentElement.webkitRequestFullscreen?.() ||
+                               document.documentElement.mozRequestFullScreen?.() ||
+                               document.documentElement.msRequestFullscreen?.();
+      
+      if (fullscreenPromise) {
+        fullscreenPromise.catch(() => {
+          console.log('Native fullscreen not available, using CSS fallback');
+        });
+      }
       
       // Lock orientation to landscape if possible
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock('landscape').catch(() => {});
       }
+      
+      utils.showToast("📱 Swipe down to hide browser bar", 3000);
     } else {
       // Exit mobile fullscreen
       this.exitMobileFullscreen();
     }
   },
+  
+  hideAddressBar() {
+    // Multiple techniques to hide address bar
+    
+    // 1. Scroll technique
+    setTimeout(() => {
+      window.scrollTo(0, 1);
+    }, 100);
+    
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 300);
+    
+    // 2. iOS Safari specific - use viewport height
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    
+    // Update on resize/orientation change
+    const updateVH = () => {
+      setTimeout(setVH, 100);
+    };
+    
+    window.addEventListener('resize', updateVH);
+    window.addEventListener('orientationchange', updateVH);
+    
+    state.vhUpdateListener = updateVH;
+  },
 
   exitMobileFullscreen() {
+    document.body.classList.remove('mobile-fullscreen-active');
     elements.playerContainer.classList.remove('mobile-fullscreen');
     elements.mobileExitFullscreen.classList.remove('show');
     document.getElementById('header').style.display = 'block';
     state.isMobileFullscreen = false;
     elements.fullscreenBtn.textContent = "⛶ Full";
     
+    // Exit native fullscreen if active
+    if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+    }
+    
     // Unlock orientation
     if (screen.orientation && screen.orientation.unlock) {
       screen.orientation.unlock();
+    }
+    
+    // Restore scrolling and body state
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    document.documentElement.style.overflow = '';
+    
+    // Remove scroll prevention listener
+    if (state.preventScrollListener) {
+      document.removeEventListener('touchmove', state.preventScrollListener);
+      state.preventScrollListener = null;
+    }
+    
+    // Remove VH update listener
+    if (state.vhUpdateListener) {
+      window.removeEventListener('resize', state.vhUpdateListener);
+      window.removeEventListener('orientationchange', state.vhUpdateListener);
+      state.vhUpdateListener = null;
     }
     
     // Readjust player position
