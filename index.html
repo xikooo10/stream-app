@@ -519,6 +519,8 @@
       width: 100%;
       height: 100%;
       border: none;
+      cursor: pointer;
+      pointer-events: auto;
     }
 
     /* Fullscreen mode for iframe - ensure it fills entire screen */
@@ -558,6 +560,38 @@
       max-height: 100vh !important;
       margin: 0 !important;
       padding: 0 !important;
+    }
+    
+    /* Mobile hint overlay */
+    .mobile-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: var(--accent-primary);
+      padding: 20px 30px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      max-width: 80%;
+      line-height: 1.6;
+    }
+    
+    .mobile-hint.show {
+      opacity: 1;
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-hint {
+        font-size: 13px;
+        padding: 16px 24px;
+      }
     }
 
     /* Manual fullscreen mode for iOS - hide header */
@@ -872,6 +906,9 @@
       <small>Try another channel or refresh</small>
       <div class="reconnect-info" id="reconnect-info"></div>
     </div>
+    <div id="mobile-hint" class="mobile-hint">
+      👆 Tap the video to enable fullscreen controls
+    </div>
     <iframe 
       id="player" 
       allowfullscreen 
@@ -1018,7 +1055,8 @@ const elements = {
   shortcutHint: document.getElementById("shortcut-hint"),
   logoutBtn: document.getElementById("logout-btn"),
   liveMatchesDiv: document.getElementById("live-matches"),
-  refreshMatchesBtn: document.getElementById("refresh-matches-btn")
+  refreshMatchesBtn: document.getElementById("refresh-matches-btn"),
+  mobileHint: document.getElementById("mobile-hint")
 };
 
 const state = {
@@ -1262,6 +1300,15 @@ const player = {
       elements.player.setAttribute('allowfullscreen', '');
       elements.player.setAttribute('webkitallowfullscreen', '');
       elements.player.setAttribute('mozallowfullscreen', '');
+      
+      // Show mobile hint on mobile devices
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      if (isMobile && elements.mobileHint) {
+        elements.mobileHint.classList.add('show');
+        setTimeout(() => {
+          elements.mobileHint.classList.remove('show');
+        }, 4000);
+      }
     }, 50);
 
     utils.saveToLocalStorage(CONFIG.LAST_CHANNEL_KEY, id);
@@ -1308,6 +1355,15 @@ const player = {
         elements.player.setAttribute('allowfullscreen', '');
         elements.player.setAttribute('webkitallowfullscreen', '');
         elements.player.setAttribute('mozallowfullscreen', '');
+        
+        // Show mobile hint on mobile devices
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isMobile && elements.mobileHint) {
+          elements.mobileHint.classList.add('show');
+          setTimeout(() => {
+            elements.mobileHint.classList.remove('show');
+          }, 4000);
+        }
       }, 50);
       
       utils.showToast(`⚽ Now watching: ${matchTitle}${streamInfo}`);
@@ -1989,6 +2045,43 @@ async function init() {
   elements.player.addEventListener("error", () => {
     reconnect.start();
   });
+  
+  // Mobile fix: Add click listener to iframe to enable embedded video controls
+  // This allows the embedded stream's own fullscreen button to work on mobile
+  let iframeInteracted = false;
+  elements.player.addEventListener("click", () => {
+    if (!iframeInteracted) {
+      iframeInteracted = true;
+      console.log('✅ Iframe interaction registered - embedded fullscreen enabled');
+      // Hide mobile hint immediately when user taps
+      if (elements.mobileHint) {
+        elements.mobileHint.classList.remove('show');
+      }
+    }
+  });
+  
+  // Also hide hint on any touch event
+  elements.player.addEventListener("touchstart", () => {
+    if (elements.mobileHint) {
+      elements.mobileHint.classList.remove('show');
+    }
+  }, { passive: true });
+  
+  // Reset interaction flag when changing streams
+  const resetIframeInteraction = () => {
+    iframeInteracted = false;
+  };
+  
+  // Add mutation observer to detect src changes
+  const iframeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+        resetIframeInteraction();
+      }
+    });
+  });
+  
+  iframeObserver.observe(elements.player, { attributes: true });
   
   // iOS manual fullscreen exit on double-tap
   let lastTap = 0;
